@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import PostHog from '../components/PostHog.astro';
 
 interface Props {
 	title?: string;
@@ -28,21 +29,11 @@ const {
 			href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@400;500;600&family=Source+Sans+3:wght@600;700;800&display=swap"
 			rel="stylesheet"
 		/>
+		<PostHog />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
 	<body class={bodyClass}>
 		<slot />
-		<script>
-			import posthog from 'posthog-js';
-
-			posthog.init('phc_oLhpgvjeqoSyOjmXjcRkvRFOOtXuW0zRR5Oe3w12ivC', {
-				api_host: 'https://app.posthog.com',
-				capture_pageview: false,
-				capture_pageleave: false,
-			});
-			posthog.capture('$pageview');
-			window.addEventListener('pagehide', () => posthog.capture('$pageleave'), { once: true });
-		</script>
 	</body>
 </html>

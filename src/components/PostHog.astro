@@ -1,0 +1,14 @@
+<script>
+	import posthog from 'posthog-js';
+
+	const isLocalhost =
+		window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+	if (!isLocalhost) {
+		posthog.init('phc_oLhpgvjeqoSyOjmXjcRkvRFOOtXuW0zRR5Oe3w12ivC', {
+			api_host: 'https://us.i.posthog.com',
+			ui_host: 'https://us.posthog.com',
+			defaults: '2026-05-30',
+		});
+	}
+</script>
