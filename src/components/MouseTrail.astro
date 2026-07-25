@@ -1,0 +1,66 @@
+<div class="trail" data-mouse-trail aria-hidden="true"></div>
+
+<script>
+	const root = document.querySelector<HTMLElement>('[data-mouse-trail]');
+
+	if (root && window.matchMedia('(pointer: fine)').matches) {
+		let last = { x: 0, y: 0 };
+		let imageIndex = Math.ceil(Math.random() * 18);
+		let zIndex = 1;
+
+		const nextImage = () => {
+			const previous = imageIndex;
+			while (imageIndex === previous) imageIndex = Math.ceil(Math.random() * 18);
+			return `/mouse-image-${imageIndex}.jpg`;
+		};
+
+		const follow = (event: PointerEvent) => {
+			const distance = Math.hypot(event.clientX - last.x, event.clientY - last.y);
+			if (distance < 110) return;
+			last = { x: event.clientX, y: event.clientY };
+
+			const image = new Image();
+			image.src = nextImage();
+			image.alt = '';
+			image.className = 'trail__image';
+			image.style.left = `${event.clientX}px`;
+			image.style.top = `${event.clientY}px`;
+			image.style.zIndex = `${zIndex++}`;
+			root.append(image);
+
+			requestAnimationFrame(() => image.classList.add('is-visible'));
+			window.setTimeout(() => {
+				image.classList.remove('is-visible');
+				window.setTimeout(() => image.remove(), 500);
+			}, 1500);
+		};
+
+		root.addEventListener('pointermove', follow);
+	}
+</script>
+
+<style>
+	.trail {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+	}
+
+	.trail :global(.trail__image) {
+		position: absolute;
+		width: clamp(150px, 22vw, 340px);
+		height: clamp(110px, 16vw, 255px);
+		object-fit: cover;
+		pointer-events: none;
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.82) rotate(-3deg);
+		transition:
+			opacity 0.35s ease,
+			transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+	}
+
+	.trail :global(.trail__image.is-visible) {
+		opacity: 0.9;
+		transform: translate(-50%, -50%) scale(1) rotate(0);
+	}
+</style>

@@ -1,0 +1,211 @@
+---
+const roles = [
+	{
+		company: 'SidesSites',
+		title: 'Freelance Web Engineer',
+		date: '2021—now',
+		copy: 'Founded a solo web practice and shipped products across M&A, process engineering, and restaurant reservations.',
+		stack: 'SvelteKit · Next.js · AWS · Bedrock · DynamoDB · Stripe',
+	},
+	{
+		company: 'Data Recognition Corp',
+		title: 'Web Engineer',
+		date: '2022—2023',
+		copy: 'Built and debugged distributed TypeScript services, Angular applications, authentication, and AWS infrastructure.',
+		stack: 'TypeScript · Angular · RxJS · Lambda · SQS · Okta',
+	},
+	{
+		company: 'Pyxl',
+		title: 'Web Developer',
+		date: '2019—2022',
+		copy: 'Led and contributed to dozens of client builds, including the agency’s first headless ecommerce project.',
+		stack: 'React · Vue · Next.js · WordPress · GraphQL · PHP',
+	},
+];
+
+const skills = [
+	'TypeScript',
+	'React',
+	'Svelte',
+	'Astro',
+	'Next.js',
+	'Node.js',
+	'AWS',
+	'Three.js',
+	'WordPress',
+	'AI / RAG',
+];
+---
+
+<section class="experience" id="experience">
+	<div class="shell experience__grid">
+		<div class="experience__sticky">
+			<p class="eyebrow">Experience / 2018—now</p>
+			<h2 class="section-title">Engineer.<br />Generalist.<br />Builder.</h2>
+			<p class="experience__lead">
+				I work from interface polish down through infrastructure—usually wherever a product needs
+				momentum most.
+			</p>
+			<a class="resume-link" href="/resume.pdf" target="_blank">
+				Full résumé <span aria-hidden="true">↗</span>
+			</a>
+		</div>
+
+		<div class="experience__content">
+			<ol class="roles">
+				{roles.map((role) => (
+					<li>
+						<p class="role__date">{role.date}</p>
+						<h3>{role.company}</h3>
+						<p class="role__title">{role.title}</p>
+						<p class="role__copy">{role.copy}</p>
+						<p class="role__stack">{role.stack}</p>
+					</li>
+				))}
+			</ol>
+
+			<div class="skills">
+				<p class="eyebrow">Working vocabulary</p>
+				<ul>
+					{skills.map((skill) => <li>{skill}</li>)}
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.experience {
+		position: relative;
+		z-index: 3;
+		padding: 10rem 0;
+		border-top: 1px solid var(--line);
+		background:
+			radial-gradient(circle at 8% 30%, rgba(157, 232, 237, 0.1), transparent 28rem),
+			var(--night-soft);
+	}
+
+	.experience__grid {
+		display: grid;
+		grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1fr);
+		gap: clamp(4rem, 10vw, 10rem);
+	}
+
+	.experience__sticky {
+		position: sticky;
+		top: 5rem;
+		align-self: start;
+	}
+
+	.experience__lead {
+		max-width: 28rem;
+		margin: 2.2rem 0;
+		color: var(--muted);
+		font-size: 1.2rem;
+		line-height: 1.4;
+	}
+
+	.resume-link {
+		display: inline-flex;
+		gap: 0.8rem;
+		align-items: center;
+		padding-bottom: 0.25rem;
+		border-bottom: 1px solid var(--cyan);
+		text-decoration: none;
+	}
+
+	.roles {
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.roles li {
+		position: relative;
+		padding: 0 0 4rem 2rem;
+		border-left: 1px solid var(--line);
+	}
+
+	.roles li::before {
+		position: absolute;
+		top: 0.35rem;
+		left: -0.25rem;
+		width: 0.45rem;
+		height: 0.45rem;
+		border-radius: 50%;
+		background: var(--cyan);
+		box-shadow: 0 0 1rem rgba(157, 232, 237, 0.65);
+		content: '';
+	}
+
+	.role__date {
+		margin: 0 0 0.5rem;
+		color: var(--cyan);
+		font-family: ui-monospace, monospace;
+		font-size: 0.7rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.roles h3 {
+		margin: 0;
+		font-family: var(--display);
+		font-size: 2.1rem;
+		line-height: 1;
+	}
+
+	.role__title {
+		margin: 0.25rem 0 1rem;
+		color: var(--muted);
+	}
+
+	.role__copy {
+		max-width: 31rem;
+		margin: 0;
+		font-size: 1.06rem;
+		line-height: 1.45;
+	}
+
+	.role__stack {
+		margin: 1.2rem 0 0;
+		color: var(--acid);
+		font-family: ui-monospace, monospace;
+		font-size: 0.68rem;
+		line-height: 1.5;
+	}
+
+	.skills {
+		margin-top: 2rem;
+	}
+
+	.skills ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.skills li {
+		padding: 0.5rem 0.8rem;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--muted);
+		font-size: 0.8rem;
+	}
+
+	@media (max-width: 800px) {
+		.experience {
+			padding-block: 6rem;
+		}
+
+		.experience__grid {
+			grid-template-columns: 1fr;
+			gap: 5rem;
+		}
+
+		.experience__sticky {
+			position: static;
+		}
+	}
+</style>

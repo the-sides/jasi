@@ -1,23 +1,48 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+	bodyClass?: string;
+}
+
+const {
+	title = 'Jacob Sides — Web Engineer & Creator',
+	description = 'Jacob Sides is a full-stack web engineer and creator based in Chattanooga, Tennessee.',
+	bodyClass = '',
+} = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#0b0b1a" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Afacad+Flux:wght@400;500;600&family=Source+Sans+3:wght@600;700;800&display=swap"
+			rel="stylesheet"
+		/>
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
 	</head>
-	<body>
+	<body class={bodyClass}>
 		<slot />
+		<script>
+			import posthog from 'posthog-js';
+
+			posthog.init('phc_oLhpgvjeqoSyOjmXjcRkvRFOOtXuW0zRR5Oe3w12ivC', {
+				api_host: 'https://app.posthog.com',
+				capture_pageview: false,
+				capture_pageleave: false,
+			});
+			posthog.capture('$pageview');
+			window.addEventListener('pagehide', () => posthog.capture('$pageleave'), { once: true });
+		</script>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

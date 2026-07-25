@@ -1,0 +1,29 @@
+---
+import MatrixRain from '../../components/MatrixRain.astro';
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="The Matrix — Jacob Sides" bodyClass="matrix-page">
+	<main>
+		<MatrixRain standalone />
+		<a href="/" class="exit">take the blue pill ↗</a>
+	</main>
+</Layout>
+
+<style>
+	:global(.matrix-page) {
+		overflow: hidden;
+		background: #000;
+	}
+
+	.exit {
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		z-index: 2;
+		color: rgba(217, 249, 157, 0.65);
+		font-family: ui-monospace, monospace;
+		font-size: 0.65rem;
+		text-decoration: none;
+	}
+</style>

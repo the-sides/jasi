@@ -1,0 +1,140 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout
+	title="Gaming — Jacob Sides"
+	description="PC gaming, Counter-Strike, and clips from Jacob Sides."
+	bodyClass="gaming-page"
+>
+	<main class="gaming">
+		<a class="back" href="/">← jacobsides.com</a>
+		<div class="gaming__grid">
+			<header>
+				<p class="eyebrow">Off the clock / Since 2004</p>
+				<h1>PC gaming<br />is life<span>.</span></h1>
+			</header>
+			<div class="gaming__copy">
+				<p class="lede">It started with a GameCube. The first PC showed up in 2011.</p>
+				<p>
+					In college, Counter-Strike scratched the itch for a competitive shooter I could keep
+					improving at. For the next four years, I captained UTK’s CS:GO collegiate team and played
+					at DreamHack Atlanta’s BYOC tournament.
+				</p>
+				<p>This is a home for clips, references, and whatever game has my attention next.</p>
+			</div>
+		</div>
+
+		<section class="clip">
+			<div class="clip__meta">
+				<p class="eyebrow">Field notes / CS2</p>
+				<h2>Smoke lineups</h2>
+				<p>Utility worth remembering, recorded for later.</p>
+			</div>
+			<div class="clip__video">
+				<iframe
+					src="https://www.youtube.com/embed/LBzuOB3C4TY?si=mWW-FK2vIfBgPOuz"
+					title="CS2 smoke lineups"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+					allowfullscreen
+				></iframe>
+			</div>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	:global(.gaming-page) {
+		background:
+			linear-gradient(rgba(11, 11, 26, 0.93), rgba(11, 11, 26, 0.93)),
+			repeating-linear-gradient(90deg, transparent 0 79px, rgba(157, 232, 237, 0.12) 80px);
+	}
+
+	.gaming {
+		width: min(1180px, calc(100% - 40px));
+		margin: 0 auto;
+		padding: 2rem 0 8rem;
+	}
+
+	.back {
+		color: var(--muted);
+		font-family: ui-monospace, monospace;
+		font-size: 0.7rem;
+		text-decoration: none;
+	}
+
+	.gaming__grid {
+		display: grid;
+		grid-template-columns: 1.2fr 0.8fr;
+		align-items: end;
+		gap: 5rem;
+		min-height: 72vh;
+		padding: 7rem 0;
+	}
+
+	h1 {
+		margin: 0;
+		font-family: var(--display);
+		font-size: clamp(4.8rem, 11vw, 9rem);
+		letter-spacing: -0.075em;
+		line-height: 0.74;
+	}
+
+	h1 span {
+		color: var(--cyan);
+	}
+
+	.gaming__copy {
+		color: var(--muted);
+		font-size: 1.08rem;
+		line-height: 1.5;
+	}
+
+	.gaming__copy .lede {
+		color: var(--ink);
+		font-size: 1.5rem;
+		line-height: 1.2;
+	}
+
+	.clip {
+		display: grid;
+		grid-template-columns: 0.35fr 1fr;
+		align-items: end;
+		gap: 2rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.clip h2 {
+		margin: 0;
+		font-family: var(--display);
+		font-size: 2.5rem;
+	}
+
+	.clip__meta > p:last-child {
+		color: var(--muted);
+	}
+
+	.clip__video {
+		aspect-ratio: 16 / 9;
+		border: 1px solid var(--line);
+		background: #000;
+	}
+
+	iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+
+	@media (max-width: 800px) {
+		.gaming__grid,
+		.clip {
+			grid-template-columns: 1fr;
+		}
+
+		.gaming__grid {
+			gap: 3rem;
+		}
+	}
+</style>

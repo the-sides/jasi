@@ -1,0 +1,84 @@
+---
+interface Props {
+	class?: string;
+	standalone?: boolean;
+}
+
+const { class: className = '', standalone = false } = Astro.props;
+---
+
+<canvas
+	class:list={['matrix-rain', standalone && 'matrix-rain--standalone', className]}
+	data-matrix-rain
+	aria-hidden="true"
+></canvas>
+
+<script>
+	const alphabet =
+		'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッンABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+	for (const canvas of document.querySelectorAll<HTMLCanvasElement>('[data-matrix-rain]')) {
+		if (canvas.dataset.ready) continue;
+		canvas.dataset.ready = 'true';
+
+		const context = canvas.getContext('2d');
+		if (!context) continue;
+
+		const fontSize = 16;
+		let drops: number[] = [];
+
+		const resize = () => {
+			const ratio = Math.min(window.devicePixelRatio || 1, 2);
+			canvas.width = Math.floor(window.innerWidth * ratio);
+			canvas.height = Math.floor(window.innerHeight * ratio);
+			canvas.style.width = `${window.innerWidth}px`;
+			canvas.style.height = `${window.innerHeight}px`;
+			context.setTransform(ratio, 0, 0, ratio, 0, 0);
+			drops = Array.from({ length: Math.ceil(window.innerWidth / fontSize) }, () =>
+				Math.floor(Math.random() * -80),
+			);
+		};
+
+		const draw = () => {
+			context.fillStyle = 'rgba(11, 11, 26, 0.1)';
+			context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+			context.fillStyle = '#d9f99d';
+			context.font = `${fontSize}px ui-monospace, monospace`;
+
+			drops.forEach((drop, index) => {
+				const character = alphabet[Math.floor(Math.random() * alphabet.length)];
+				context.fillText(character, index * fontSize, drop * fontSize);
+				if (drop * fontSize > window.innerHeight && Math.random() > 0.977) drops[index] = 0;
+				else drops[index] += 1;
+			});
+		};
+
+		resize();
+		const interval = window.setInterval(draw, 85);
+		window.addEventListener('resize', resize);
+		window.addEventListener(
+			'pagehide',
+			() => {
+				window.clearInterval(interval);
+				window.removeEventListener('resize', resize);
+			},
+			{ once: true },
+		);
+	}
+</script>
+
+<style>
+	.matrix-rain {
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		width: 100vw;
+		height: 100vh;
+		pointer-events: none;
+		opacity: 0.085;
+	}
+
+	.matrix-rain--standalone {
+		opacity: 0.75;
+	}
+</style>

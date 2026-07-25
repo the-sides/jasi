@@ -1,0 +1,256 @@
+---
+const projects = [
+	{
+		name: 'TriMech',
+		image: '/trimech.webp',
+		href: 'https://trimech.com',
+		role: 'Full-stack development',
+		index: '01',
+	},
+	{
+		name: 'MLILY',
+		image: '/mlily.webp',
+		href: 'https://mlilyusa.com',
+		role: 'Web development',
+		index: '02',
+	},
+	{
+		name: 'Brownlee',
+		image: '/brownlee.webp',
+		href: 'https://brownlee.com',
+		role: 'Full-stack development · W3 Gold',
+		index: '03',
+	},
+	{
+		name: 'Akima',
+		image: '/akima.webp',
+		href: 'https://akima.com',
+		role: 'Full-stack development',
+		index: '04',
+	},
+	{
+		name: 'OpsEyes',
+		image: '/opseyes.webp',
+		href: 'https://opseyes.com',
+		role: 'Full-stack development',
+		index: '05',
+	},
+	{
+		name: 'RazorSync',
+		image: '/razorsync.webp',
+		href: 'https://razorsync.com',
+		role: 'Full-stack development',
+		index: '06',
+	},
+];
+---
+
+<section class="work" id="work">
+	<div class="shell work__heading">
+		<div>
+			<p class="eyebrow">Selected client work / 2020—now</p>
+			<h2 class="section-title">Built for the<br />real web.</h2>
+		</div>
+		<p class="work__intro">
+			A handful of the websites and applications I’ve helped design, engineer, ship, and keep
+			moving.
+		</p>
+	</div>
+
+	<div class="work__rail" aria-label="Selected projects">
+		{projects.map((project) => (
+			<a class="project" href={project.href} target="_blank" rel="noreferrer" data-reveal>
+				<div class="project__frame">
+					<img src={project.image} alt={`${project.name} website`} loading="lazy" />
+				</div>
+				<div class="project__meta">
+					<span class="project__index">{project.index}</span>
+					<div>
+						<h3>{project.name}</h3>
+						<p>{project.role}</p>
+					</div>
+					<span class="project__arrow" aria-hidden="true">↗</span>
+				</div>
+			</a>
+		))}
+	</div>
+</section>
+
+<script>
+	const observer = new IntersectionObserver(
+		(entries) => {
+			for (const entry of entries) {
+				if (!entry.isIntersecting) continue;
+				entry.target.classList.add('is-visible');
+				observer.unobserve(entry.target);
+			}
+		},
+		{ threshold: 0.15 },
+	);
+
+	document.querySelectorAll('[data-reveal]').forEach((element) => observer.observe(element));
+</script>
+
+<style>
+	.work {
+		position: relative;
+		z-index: 3;
+		padding: 8rem 0 10rem;
+		background:
+			linear-gradient(180deg, transparent, var(--night) 4rem),
+			var(--night);
+	}
+
+	.work__heading {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(260px, 0.38fr);
+		align-items: end;
+		gap: 4rem;
+		margin-bottom: 5rem;
+	}
+
+	.work__intro {
+		max-width: 25rem;
+		margin: 0 0 0.35rem;
+		color: var(--muted);
+		font-size: 1.18rem;
+		line-height: 1.35;
+	}
+
+	.work__rail {
+		display: grid;
+		gap: 7rem;
+		width: min(1380px, calc(100% - 40px));
+		margin-inline: auto;
+	}
+
+	.project {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(240px, 0.28fr);
+		align-items: end;
+		gap: 2rem;
+		color: inherit;
+		text-decoration: none;
+		opacity: 0;
+		transform: translateY(3rem);
+		transition:
+			opacity 0.7s ease,
+			transform 0.7s ease;
+	}
+
+	.project:nth-child(even) {
+		grid-template-columns: minmax(240px, 0.28fr) minmax(0, 1fr);
+	}
+
+	.project:nth-child(even) .project__frame {
+		grid-column: 2;
+	}
+
+	.project:nth-child(even) .project__meta {
+		grid-row: 1;
+		grid-column: 1;
+	}
+
+	.project.is-visible {
+		opacity: 1;
+		transform: none;
+	}
+
+	.project__frame {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 16 / 9;
+		border: 1px solid var(--line);
+		background: var(--panel);
+	}
+
+	.project__frame::after {
+		position: absolute;
+		inset: 0;
+		content: '';
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+		pointer-events: none;
+	}
+
+	.project__frame img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top;
+		filter: saturate(0.72) contrast(1.04);
+		transition:
+			filter 0.45s ease,
+			transform 0.8s cubic-bezier(0.2, 0.7, 0, 1);
+	}
+
+	.project:hover .project__frame img {
+		filter: saturate(1) contrast(1);
+		transform: scale(1.025);
+	}
+
+	.project__meta {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: start;
+		gap: 1rem;
+		padding-bottom: 0.8rem;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.project__index {
+		padding-top: 0.3rem;
+		color: var(--cyan);
+		font-family: ui-monospace, monospace;
+		font-size: 0.7rem;
+	}
+
+	.project h3 {
+		margin: 0;
+		font-family: var(--display);
+		font-size: clamp(1.8rem, 3.5vw, 3rem);
+		line-height: 1;
+	}
+
+	.project p {
+		margin: 0.45rem 0 0;
+		color: var(--muted);
+		font-size: 0.82rem;
+	}
+
+	.project__arrow {
+		font-size: 1.5rem;
+		transition: transform 0.2s ease;
+	}
+
+	.project:hover .project__arrow {
+		transform: translate(0.2rem, -0.2rem);
+	}
+
+	@media (max-width: 800px) {
+		.work {
+			padding-block: 6rem;
+		}
+
+		.work__heading {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+			margin-bottom: 3rem;
+		}
+
+		.work__rail {
+			gap: 4.5rem;
+		}
+
+		.project,
+		.project:nth-child(even) {
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+		}
+
+		.project:nth-child(even) .project__frame,
+		.project:nth-child(even) .project__meta {
+			grid-row: auto;
+			grid-column: auto;
+		}
+	}
+</style>

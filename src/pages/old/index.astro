@@ -1,0 +1,351 @@
+---
+import MouseTrail from '../../components/MouseTrail.astro';
+import Layout from '../../layouts/Layout.astro';
+
+const sites = [
+	['Brownlee', 'https://brownlee.com'],
+	['TriMech', 'https://trimech.com'],
+	['Akima', 'https://akima.com'],
+	['RazorSync', 'https://razorsync.com'],
+	['OpsEyes', 'https://opseyes.com'],
+	['Empower -U- Consulting', 'https://empoweruconsults.com'],
+	['Pick3', 'https://pick3.netlify.app/'],
+	['Fillauer', 'https://fillauer.com'],
+];
+
+const films = ['37qtoh1hzmE', 'I7WaMoQm3gM', 'MqdaV_SFadA', '1Kn0rBMip5o'];
+---
+
+<Layout title="Archive — Jacob Sides" description="The previous Jacob Sides portfolio, preserved.">
+	<main class="archive">
+		<section class="archive-hero">
+			<div class="grid-bg" aria-hidden="true"></div>
+			<a class="archive-back" href="/">← New site</a>
+			<div class="archive-hero__inner shell">
+				<div>
+					<p class="wave">👋</p>
+					<h1>Hi, I’m<br />Jacob Sides</h1>
+					<p class="archive-hero__tag">
+						I love to build, capture, and learn digital things. I roll with progress and
+						mistakes—shoot for greatness, aim for visual appeal.
+					</p>
+				</div>
+				<div class="archive-contact">
+					<a href="mailto:jacob.r.sides@gmail.com">jacob.r.sides@gmail.com</a>
+					<a href="https://github.com/the-sides">GitHub ↗</a>
+					<a href="https://www.linkedin.com/in/jacob-sides/">LinkedIn ↗</a>
+				</div>
+			</div>
+		</section>
+
+		<section class="websites">
+			<div class="blob blob--one"></div>
+			<div class="blob blob--two"></div>
+			<div class="blob blob--three"></div>
+			<div class="websites__panel shell">
+				<p class="eyebrow">Client work</p>
+				<h2>Websites</h2>
+				<p class="websites__intro">
+					Between my time at Pyxl and DRC, I worked on dozens of sites and applications. A few
+					are still out there:
+				</p>
+				<div class="site-list">
+					{sites.map(([name, href], index) => (
+						<a href={href} target="_blank" rel="noreferrer">
+							<span>{String(index + 1).padStart(2, '0')}</span>
+							{name}
+							<b>↗</b>
+						</a>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<section class="media shell">
+			<p class="eyebrow">Moving image</p>
+			<h2>Short films</h2>
+			<div class="film-grid">
+				{films.map((film, index) => (
+					<div class="film">
+						<iframe
+							src={`https://www.youtube.com/embed/${film}`}
+							title={`Short film ${index + 1}`}
+							loading="lazy"
+							allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+							allowfullscreen
+						></iframe>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="photography">
+			<MouseTrail />
+			<div class="photography__label">
+				<p class="eyebrow">Move your mouse</p>
+				<h2>Photography</h2>
+			</div>
+			<p class="photography__mobile">The image trail wakes up on a desktop.</p>
+		</section>
+	</main>
+</Layout>
+
+<style>
+	.archive {
+		background: var(--night);
+	}
+
+	.archive-hero {
+		position: relative;
+		display: flex;
+		align-items: center;
+		min-height: 100vh;
+		overflow: hidden;
+	}
+
+	.grid-bg {
+		position: absolute;
+		inset: 0;
+		opacity: 0.28;
+		background-image:
+			linear-gradient(rgba(157, 232, 237, 0.12) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(157, 232, 237, 0.12) 1px, transparent 1px);
+		background-size: 48px 48px;
+		mask-image: linear-gradient(to bottom, black, transparent);
+		transform: perspective(500px) rotateX(60deg) scale(1.8) translateY(28%);
+	}
+
+	.archive-back {
+		position: absolute;
+		top: 1.5rem;
+		left: 1.5rem;
+		z-index: 2;
+		color: var(--muted);
+		font-family: ui-monospace, monospace;
+		font-size: 0.68rem;
+		text-decoration: none;
+	}
+
+	.archive-hero__inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 3rem;
+	}
+
+	.wave {
+		margin: 0 0 1rem;
+		font-size: 3rem;
+		transform-origin: bottom center;
+		animation: wave 2.5s ease-in-out infinite;
+	}
+
+	.archive h1,
+	.archive h2 {
+		margin: 0;
+		font-family: var(--display);
+		font-weight: 700;
+		letter-spacing: -0.06em;
+		line-height: 0.85;
+	}
+
+	.archive h1 {
+		font-size: clamp(4.5rem, 12vw, 10rem);
+	}
+
+	.archive h2 {
+		font-size: clamp(3.5rem, 8vw, 7rem);
+	}
+
+	.archive-hero__tag {
+		max-width: 37rem;
+		margin: 2rem 0 0;
+		color: var(--muted);
+		font-size: 1.2rem;
+		line-height: 1.35;
+	}
+
+	.archive-contact {
+		display: grid;
+		justify-items: end;
+		gap: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+	.websites {
+		position: relative;
+		display: flex;
+		align-items: center;
+		min-height: 110vh;
+		overflow: hidden;
+		background: #05050b;
+	}
+
+	.websites__panel {
+		position: relative;
+		z-index: 2;
+		padding: clamp(2rem, 6vw, 5rem);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		background: rgba(23, 23, 56, 0.68);
+		backdrop-filter: blur(24px);
+	}
+
+	.websites__intro {
+		max-width: 34rem;
+		color: var(--muted);
+		font-size: 1.15rem;
+	}
+
+	.site-list {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		margin-top: 3rem;
+		border-top: 1px solid var(--line);
+	}
+
+	.site-list a {
+		display: grid;
+		grid-template-columns: 2rem 1fr auto;
+		gap: 1rem;
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--line);
+		text-decoration: none;
+	}
+
+	.site-list a:nth-child(odd) {
+		padding-right: 2rem;
+	}
+
+	.site-list a:nth-child(even) {
+		padding-left: 2rem;
+		border-left: 1px solid var(--line);
+	}
+
+	.site-list span {
+		color: var(--cyan);
+		font-family: ui-monospace, monospace;
+		font-size: 0.65rem;
+	}
+
+	.blob {
+		position: absolute;
+		width: 34vw;
+		height: 34vw;
+		border-radius: 45% 55% 62% 38%;
+		filter: blur(2px);
+		mix-blend-mode: screen;
+		animation: float 13s ease-in-out infinite alternate;
+	}
+
+	.blob--one {
+		top: 10%;
+		left: -5%;
+		background: #2626a8;
+	}
+
+	.blob--two {
+		right: -4%;
+		bottom: 2%;
+		background: #155e75;
+		animation-delay: -4s;
+	}
+
+	.blob--three {
+		top: 5%;
+		right: 28%;
+		width: 18vw;
+		height: 18vw;
+		background: #5b21b6;
+		animation-delay: -8s;
+	}
+
+	.media {
+		padding-block: 10rem;
+	}
+
+	.film-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
+		margin-top: 4rem;
+	}
+
+	.film {
+		aspect-ratio: 16 / 9;
+		background: #000;
+	}
+
+	.film iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+	}
+
+	.photography {
+		position: relative;
+		display: grid;
+		min-height: 100vh;
+		place-items: center;
+		overflow: hidden;
+		border-top: 1px solid var(--line);
+		cursor: crosshair;
+	}
+
+	.photography__label {
+		position: relative;
+		z-index: 20;
+		padding: 2.5rem;
+		border: 1px solid rgba(157, 232, 237, 0.4);
+		background: rgba(11, 11, 26, 0.7);
+		text-align: center;
+		backdrop-filter: blur(12px);
+		pointer-events: none;
+	}
+
+	.photography__mobile {
+		display: none;
+	}
+
+	@keyframes wave {
+		50% {
+			transform: rotate(14deg);
+		}
+	}
+
+	@keyframes float {
+		to {
+			border-radius: 58% 42% 37% 63%;
+			transform: translate(8vw, 5vh) rotate(25deg) scale(1.18);
+		}
+	}
+
+	@media (max-width: 760px) {
+		.archive-hero__inner {
+			display: grid;
+		}
+
+		.archive-contact {
+			justify-items: start;
+		}
+
+		.site-list,
+		.film-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.site-list a:nth-child(n) {
+			padding-inline: 0;
+			border-left: 0;
+		}
+
+		.photography__mobile {
+			position: absolute;
+			bottom: 2rem;
+			display: block;
+			color: var(--muted);
+			font-size: 0.75rem;
+		}
+	}
+</style>
