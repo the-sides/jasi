@@ -23,8 +23,7 @@ import Layout from '../layouts/Layout.astro';
 			</nav>
 
 			<div class="hero__content shell" data-hero-copy>
-				<p class="hero__status"><span></span> Available for interesting problems</p>
-				<h1>Jacob<br />Sides</h1>
+				<h1>Jacob <br />Sides</h1>
 				<div class="hero__lower">
 					<div>
 						<p>Full-stack web developer<br />by experience &amp; skill.</p>
@@ -148,34 +147,19 @@ import Layout from '../layouts/Layout.astro';
 		pointer-events: auto;
 	}
 
-	.hero__status {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin: 0 0 2.4rem;
-		color: var(--muted);
-		font-family: ui-monospace, monospace;
-		font-size: 0.63rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-
-	.hero__status span {
-		width: 0.45rem;
-		height: 0.45rem;
-		border-radius: 50%;
-		background: var(--acid);
-		box-shadow: 0 0 0.8rem rgba(217, 249, 157, 0.8);
-	}
-
 	.hero h1 {
-		width: min-content;
+		width: auto;
 		margin: 0;
 		font-family: var(--display);
-		font-size: clamp(5.3rem, 15vw, 12rem);
+		font-size: clamp(3.71rem, 10.5vw, 8.4rem);
 		font-weight: 700;
 		letter-spacing: -0.075em;
 		line-height: 0.66;
+		white-space: nowrap;
+	}
+
+	.hero h1 br {
+		display: none;
 	}
 
 	.hero__lower {
@@ -188,7 +172,7 @@ import Layout from '../layouts/Layout.astro';
 	.hero__lower p {
 		margin: 0.4rem 0 0;
 		color: var(--muted);
-		font-size: 0.78rem;
+		font-size: 1.014rem;
 		line-height: 1.2;
 		text-shadow: 0 0 0.8rem var(--night), 0 0 0.8rem var(--night);
 	}
@@ -197,7 +181,7 @@ import Layout from '../layouts/Layout.astro';
 		display: grid;
 		justify-items: end;
 		gap: 0.3rem;
-		font-size: 0.78rem;
+		font-size: 1.014rem;
 	}
 
 	.hero__contact a {
@@ -208,7 +192,7 @@ import Layout from '../layouts/Layout.astro';
 
 	.hero__contact .email {
 		margin-bottom: 0.5rem;
-		font-size: 1.05rem;
+		font-size: 1.365rem;
 	}
 
 	.hero__contact .email:hover {
@@ -330,8 +314,14 @@ import Layout from '../layouts/Layout.astro';
 		}
 
 		.hero h1 {
-			font-size: clamp(5rem, 25vw, 8rem);
-			line-height: 0.7;
+			width: min-content;
+			font-size: clamp(3.5rem, 17.5vw, 5.6rem);
+			line-height: 0.82;
+			white-space: normal;
+		}
+
+		.hero h1 br {
+			display: initial;
 		}
 
 		.hero__lower {
@@ -346,7 +336,7 @@ import Layout from '../layouts/Layout.astro';
 		}
 
 		.hero__contact .email {
-			font-size: 0.95rem;
+			font-size: 1.235rem;
 			overflow-wrap: anywhere;
 		}
 
