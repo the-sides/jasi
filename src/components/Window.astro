@@ -44,16 +44,13 @@ const { title, x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
 
 		<!--
 			Click-to-focus shield. An embedded frame swallows pointer, wheel and
-			touch events, so an unfocused window keeps a pane over its contents:
-			the first click reaches the WM and raises the window, and only then
-			does the frame get the pointer. Same bargain a tiling WM makes.
+			touch events, so a window keeps a pane over its contents until it is
+			done taking those events for itself: the click reaches the WM, and
+			only then does the frame get the pointer. Same bargain a tiling WM
+			makes. When the shield comes down is global.css's business — in touch
+			mode it is a tap that maximizes, so it waits for that, not for focus.
 		-->
-		<div
-			data-shield
-			aria-hidden="true"
-			class="absolute inset-0 group-data-[focused]:hidden"
-		>
-		</div>
+		<div data-shield aria-hidden="true" class="absolute inset-0"></div>
 
 		<div data-resize="e" class="absolute top-0 -right-1 h-full w-2 cursor-e-resize"></div>
 		<div data-resize="s" class="absolute -bottom-1 left-0 h-2 w-full cursor-s-resize"></div>

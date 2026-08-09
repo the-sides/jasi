@@ -41,6 +41,12 @@ const MIN_WIDTH = 220;
 const MIN_HEIGHT = 120;
 /** Pointer travel (px) past which a gesture is a drag, not a tap. */
 const TAP_SLOP = 4;
+/**
+ * The same threshold for a tap on the shield, where the gesture we are telling
+ * a tap apart from is a scroll of the whole desktop — and where the pointer is
+ * usually a finger, which wanders further than a mouse does.
+ */
+const SWIPE_SLOP = 12;
 /** Keep in sync with the transition in global.css. */
 const SNAP_MS = 160;
 /** Keep in sync with the stacking media query in global.css. */
@@ -160,8 +166,13 @@ function initDesktop(desktop: HTMLElement) {
 	}
 
 	let drag: Drag | null = null;
+	/** A press on the shield, still undecided between a tap and a scroll. */
+	let tap: { win: HTMLElement; id: number; x: number; y: number } | null = null;
 
 	desktop.addEventListener('pointerdown', (e) => {
+		// Nothing is captured for a shield press, so its pointerup can be lost
+		// outside the desktop. A new press is the last word on the old one.
+		tap = null;
 		if (e.button !== 0) return;
 		const target = e.target as Element;
 		const win = target.closest<HTMLElement>('[data-window]');
@@ -174,7 +185,15 @@ function initDesktop(desktop: HTMLElement) {
 		// A stacked window has nowhere to be dragged to, and a press on the
 		// shield is spent raising the window. Either way the gesture ends here —
 		// no capture and no preventDefault, so touch scrolling still works.
-		if (stacked.matches || shielded) return;
+		if (stacked.matches || shielded) {
+			// In touch mode the press also has a window to maximize. Nothing is
+			// captured, so the gesture may yet turn out to be a scroll: hold the
+			// origin and decide on pointerup.
+			if (shielded && !stacked.matches && getMode() === 'touch') {
+				tap = { win, id: e.pointerId, x: e.clientX, y: e.clientY };
+			}
+			return;
+		}
 
 		const handle = target.closest<HTMLElement>('[data-resize]');
 		const mode: Mode = handle ? (handle.dataset.resize as Mode) : 'move';
@@ -242,8 +261,26 @@ function initDesktop(desktop: HTMLElement) {
 		if (!moved && mode === 'move' && getMode() === 'touch') toggleMaximize(win);
 	}
 
-	desktop.addEventListener('pointerup', endDrag);
-	desktop.addEventListener('pointercancel', endDrag);
+	/** A press on the shield that stayed put was a tap: put the window up. */
+	function endTap(e: PointerEvent) {
+		if (!tap || e.pointerId !== tap.id) return;
+		const { win, x, y } = tap;
+		tap = null;
+		if (Math.abs(e.clientX - x) > SWIPE_SLOP || Math.abs(e.clientY - y) > SWIPE_SLOP) return;
+		toggleMaximize(win);
+	}
+
+	desktop.addEventListener('pointerup', (e) => {
+		endTap(e);
+		endDrag(e);
+	});
+
+	// A cancelled pointer is the browser taking the gesture over for a scroll —
+	// which is the answer to what the press was, so the tap is dropped.
+	desktop.addEventListener('pointercancel', (e) => {
+		tap = null;
+		endDrag(e);
+	});
 
 	// Leaving touch mode hands the windows back: with no tap gesture, a
 	// maximized window would otherwise be stuck on the stage.

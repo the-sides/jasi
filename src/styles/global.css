@@ -67,6 +67,25 @@
 	);
 }
 
+/*
+ * When the shield over a window's contents comes down (see Window.astro).
+ * Desktop mode: on focus — click to raise, then interact. Touch mode: not until
+ * the window is maximized, because there a tap is what puts it on the stage,
+ * and a frame that took the pointer at focus would swallow that tap instead.
+ */
+[data-window][data-focused] [data-shield] {
+	display: none;
+}
+
+/* Mirrors getMode() in mode.ts: anything but desktop is touch. */
+/* The min-width is the other side of STACK_QUERY in wm.ts: the stack has no
+ * stage to maximize into, so there focus is all a window can wait for. */
+@media (min-width: 768px) {
+	html:not([data-mode='desktop']) [data-window]:not([data-maximized]) [data-shield] {
+		display: block;
+	}
+}
+
 /* Held up for the length of the gesture that raises a window — see wm.ts. */
 [data-window][data-holding] [data-shield] {
 	display: block;
