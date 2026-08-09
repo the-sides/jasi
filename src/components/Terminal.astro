@@ -1,24 +1,31 @@
 ---
 /**
- * The shell: one `sidesfetch` invocation and its banner, then a prompt that
- * takes commands (see commands.ts). Colours come from the Catppuccin Mocha
- * ANSI set in global.css, so the window reads as the Omarchy terminal it is
- * imitating.
+ * A shell transcript: one command and the banner it printed. Colours come from
+ * the Catppuccin Mocha ANSI set in global.css, so the window reads as the
+ * Omarchy terminal it is imitating.
  *
- * Nothing is ever printed back. A command here is a shortcut that acts on the
- * desktop, so the transcript above the prompt stays exactly as it was.
+ * A transcript that ends on a prompt ends on a working one: it takes commands
+ * (see commands.ts). Nothing is ever printed back — a command here is a
+ * shortcut that acts on the desktop, so the transcript above it stays exactly
+ * as it was.
  */
 interface Props {
 	user?: string;
 	host?: string;
 	cwd?: string;
+	/** What the prompt shows as having been run. */
+	command?: string;
+	/** figlet output, ANSI Shadow. Defaults to the site's own banner. */
+	art?: string;
+	/** What a screen reader is given in place of the banner. */
+	label?: string;
+	/** Whether the transcript ends on a live prompt — one that takes commands. */
+	cursor?: boolean;
 }
-
-const { user = 'jake', host = 'jasi', cwd = '~' } = Astro.props;
 
 // figlet, ANSI Shadow. The box-drawing glyphs are the letters' own bevels, not
 // a separate shadow — so this renders in one colour, the way a terminal does.
-const ART = String.raw`
+const SIDES = String.raw`
      ██╗ █████╗  ██████╗ ██████╗ ██████╗     ███████╗██╗██████╗ ███████╗███████╗
      ██║██╔══██╗██╔════╝██╔═══██╗██╔══██╗    ██╔════╝██║██╔══██╗██╔════╝██╔════╝
      ██║███████║██║     ██║   ██║██████╔╝    ███████╗██║██║  ██║█████╗  ███████╗
@@ -27,9 +34,21 @@ const ART = String.raw`
  ╚════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═════╝     ╚══════╝╚═╝╚═════╝ ╚══════╝╚══════╝
 `.replace(/^\n|\n$/g, '');
 
-// 80 columns at CaskaydiaMono's 0.586em advance. Below that width the cell
-// shrinks to keep the banner whole, rather than handing the user a scrollbar.
-const COLUMNS = 'calc(100cqi / 46.875)';
+const {
+	user = 'jake',
+	host = 'jasi',
+	cwd = '~',
+	command = 'sidesfetch',
+	art = SIDES,
+	label = 'Jacob Sides',
+	cursor = true,
+} = Astro.props;
+
+// The banner's own width in columns, at CaskaydiaMono's 0.586em advance: the
+// width it needs to render whole. Below that the cell shrinks to keep the
+// banner whole, rather than handing the user a scrollbar.
+const cols = Math.max(...art.split('\n').map((line) => [...line].length));
+const COLUMNS = `calc(100cqi / ${Math.round(cols * 0.5859375 * 1e3) / 1e3})`;
 ---
 
 <div class="h-full w-full overflow-hidden bg-term-bg p-2 [container-type:inline-size]">
@@ -40,37 +59,44 @@ const COLUMNS = 'calc(100cqi / 46.875)';
 		<p>
 			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
 				>{cwd}</span
-			><span>$ </span><span>sidesfetch</span>
+			><span>$ </span><span>{command}</span>
 		</p>
 
 		{/* The expression hugs the tags: whitespace here would land in the banner.
-		    The margin is in em, so it stays one blank line tall as the cell shrinks. */}
+		    The margin is in em, so it stays one blank line tall as the cell shrinks.
+		    The blank line below it is the room the next prompt needs — a transcript
+		    that does not end on one has nothing to leave room for. */}
 		<pre
 			role="img"
-			aria-label="Jacob Sides"
-			class="my-[1.25em] leading-none text-term-magenta">{ART}</pre>
+			aria-label={label}
+			class:list={['mt-[1.25em] leading-none text-term-magenta', cursor && 'mb-[1.25em]']}>{art}</pre>
 
 		{/*
-			The live prompt. The input is invisible and laid over the line; what was
-			typed is echoed beside a block cursor, so the caret stays the terminal's
-			own rather than the browser's. 16px on the input is only there to stop
-			iOS zooming in on focus — none of its text is ever seen.
+			A transcript that ends on a live prompt reads as a session still open —
+			and this one is open: the input is invisible and laid over the line, and
+			what is typed is echoed beside the block cursor, so the caret stays the
+			terminal's own rather than the browser's. 16px on the input is only there
+			to stop iOS zooming in on focus; none of its text is ever seen.
 		*/}
-		<p data-term-line class="relative">
-			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
-				>{cwd}</span
-			><span>$ </span><span data-term-echo></span><span data-term-cursor aria-hidden="true">█</span>
-			<input
-				data-term-input
-				type="text"
-				aria-label="Command"
-				autocomplete="off"
-				autocapitalize="off"
-				autocorrect="off"
-				spellcheck="false"
-				class="absolute inset-0 w-full bg-transparent text-[16px] opacity-0 outline-none"
-			/>
-		</p>
+		{
+			cursor && (
+				<p data-term-line class="relative">
+					<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
+						>{cwd}</span
+					><span>$ </span><span data-term-echo /><span data-term-cursor aria-hidden="true">█</span>
+					<input
+						data-term-input
+						type="text"
+						aria-label="Command"
+						autocomplete="off"
+						autocapitalize="off"
+						autocorrect="off"
+						spellcheck="false"
+						class="absolute inset-0 w-full bg-transparent text-[16px] opacity-0 outline-none"
+					/>
+				</p>
+			)
+		}
 	</div>
 </div>
 
