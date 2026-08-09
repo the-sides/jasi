@@ -3,5 +3,37 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout>
-	<main></main>
+	<main class="relative flex h-screen w-screen flex-col overflow-hidden">
+		<!-- Top bar -->
+		<div
+			class="z-20 grid w-full grid-cols-3 items-center bg-neutral-800 px-2 py-1 font-mono text-sm text-amber-100"
+		>
+			<span class="justify-self-start">jasi</span>
+			<span id="clock" class="text-center tabular-nums">--:--:--</span>
+			<span class="justify-self-end"></span>
+		</div>
+
+		<!-- Desktop -->
+		<div id="desktop" class="relative flex-1 overflow-hidden">
+			<img
+				src="/wallpaper.png"
+				alt="Wallpaper of a gradient"
+				class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
+			/>
+			<!-- Windows mount here -->
+		</div>
+	</main>
 </Layout>
+
+<script>
+	const clock = document.getElementById('clock');
+
+	function tick() {
+		if (!clock) return;
+		clock.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false });
+	}
+
+	tick();
+	const int = setInterval(tick, 1000);
+	document.addEventListener('astro:before-swap', () => clearInterval(int));
+</script>
