@@ -5,6 +5,7 @@ import ModeToggle from '../components/ModeToggle.astro';
 import Terminal from '../components/Terminal.astro';
 import Browser from '../components/Browser.astro';
 import Pdf from '../components/Pdf.astro';
+import Work from '../components/Work.astro';
 ---
 
 <Layout>
@@ -46,7 +47,9 @@ import Pdf from '../components/Pdf.astro';
 				Geometry is fractions of the layout box, not pixels: 0.43 is 43% of
 				its width, and the gaps between windows are the slivers left over.
 				The terminal spans the top; the blog and the resume share the row
-				below it in the same 43/56 split they always had.
+				below it in the same 43/56 split they always had. The work
+				comes after those, past the bottom of the first layout box — a second
+				screenful the desktop scrolls down to.
 			-->
 			<div id="desktop" class="absolute inset-0 overflow-auto">
 				<Window title="jake@jasi:~" x={0} y={0} w={1} h={0.26}>
@@ -65,6 +68,8 @@ import Pdf from '../components/Pdf.astro';
 				<Window title="resume-jacob-sides.pdf" x={0.443} y={0.28} w={0.557} h={0.72}>
 					<Pdf src="/resume-jacob-sides.pdf" title="Jacob Sides' resume" />
 				</Window>
+
+				<Work />
 			</div>
 		</div>
 	</main>

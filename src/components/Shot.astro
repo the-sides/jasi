@@ -1,0 +1,45 @@
+---
+/**
+ * A site screenshot filling a window, with a label band across the top naming
+ * what you are looking at.
+ *
+ * The band sits above the image rather than over its foot because of how these
+ * windows are stacked: a cascade only leaves the top strip of each window
+ * showing, so the name has to live in that strip to be worth anything.
+ */
+interface Props {
+	src: string;
+	name: string;
+	blurb: string;
+	note?: string;
+}
+
+const { src, name, blurb, note } = Astro.props;
+---
+
+<figure class="flex h-full w-full flex-col bg-term-bg">
+	<figcaption
+		class="flex shrink-0 items-baseline gap-2 border-b border-surface0 bg-crust px-2 py-1 font-mono text-[11px] leading-none"
+	>
+		<span class="shrink-0 text-fg">{name}</span>
+		<span class="truncate text-fg-dim">{blurb}</span>
+		{note && <span class="ml-auto shrink-0 text-accent">{note}</span>}
+	</figcaption>
+
+	<!--
+		Anchored to the top left rather than centred. These are screenshots of
+		whole pages and the window is rarely the same shape, so something is
+		always cropped: off the bottom on a wide window, off the side on a narrow
+		stacked one. The corner the page starts in — logo, nav, headline — is the
+		part that identifies it, so that is the corner that is kept.
+	-->
+	<img
+		src={src}
+		alt={`Screenshot of the ${name} website`}
+		width="1600"
+		height="1041"
+		loading="lazy"
+		decoding="async"
+		class="min-h-0 w-full flex-1 object-cover object-left-top"
+	/>
+</figure>
