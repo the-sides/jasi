@@ -13,6 +13,17 @@
 	/* Hyprland's inactive border is a flat grey, not a theme colour */
 	--color-border-idle: #464646;
 
+	/* Terminal palette — Catppuccin Mocha's ANSI set, as Omarchy ships it */
+	--color-term-bg: #1e1e2e;
+	--color-term-fg: #cdd6f4;
+	--color-term-dim: #6c7086;
+	--color-term-red: #f38ba8;
+	--color-term-green: #a6e3a1;
+	--color-term-yellow: #f9e2af;
+	--color-term-blue: #89b4fa;
+	--color-term-magenta: #cba6f7;
+	--color-term-cyan: #94e2d5;
+
 	--font-mono: 'CaskaydiaMono Nerd Font', 'CaskaydiaCove Nerd Font', ui-monospace,
 		'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, monospace;
 
@@ -23,4 +34,78 @@
 
 [data-dragging] [data-drag] {
 	cursor: grabbing;
+}
+
+/*
+ * Desktop scrollbar: a translucent thumb floating on the wallpaper, no track
+ * and no buttons. The transparent border plus background-clip is what insets
+ * the thumb, since ::-webkit-scrollbar-thumb ignores padding.
+ */
+#desktop {
+	overscroll-behavior: contain;
+}
+
+#desktop::-webkit-scrollbar {
+	width: 11px;
+	height: 11px;
+}
+
+#desktop::-webkit-scrollbar-track,
+#desktop::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+#desktop::-webkit-scrollbar-thumb {
+	border: 3px solid transparent;
+	border-radius: 9999px;
+	background-color: color-mix(in srgb, var(--color-fg) 28%, transparent);
+	background-clip: content-box;
+}
+
+#desktop::-webkit-scrollbar-thumb:hover {
+	background-color: color-mix(in srgb, var(--color-fg) 55%, transparent);
+}
+
+/* Firefox has no ::-webkit-scrollbar; give it the nearest standard equivalent. */
+@supports not selector(::-webkit-scrollbar) {
+	#desktop {
+		scrollbar-width: thin;
+		scrollbar-color: color-mix(in srgb, var(--color-fg) 28%, transparent) transparent;
+	}
+}
+
+/* Maximize/restore animation. Kept off during drags — see SNAP_MS in wm.ts. */
+[data-window][data-snapping] {
+	transition:
+		transform 160ms ease-out,
+		width 160ms ease-out,
+		height 160ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-window][data-snapping] {
+		transition: none;
+	}
+}
+
+/* Terminal block cursor */
+@keyframes term-blink {
+	0%,
+	49% {
+		opacity: 1;
+	}
+	50%,
+	100% {
+		opacity: 0;
+	}
+}
+
+[data-term-cursor] {
+	animation: term-blink 1.06s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-term-cursor] {
+		animation: none;
+	}
 }

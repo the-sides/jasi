@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Window from '../components/Window.astro';
+import ModeToggle from '../components/ModeToggle.astro';
+import Terminal from '../components/Terminal.astro';
+import Browser from '../components/Browser.astro';
 ---
 
 <Layout>
@@ -11,19 +14,54 @@ import Window from '../components/Window.astro';
 		>
 			<span class="justify-self-start text-fg-dim">jasi</span>
 			<span id="clock" class="text-center tabular-nums">--:--:--</span>
-			<span class="justify-self-end"></span>
+			<span class="justify-self-end">
+				<ModeToggle />
+			</span>
 		</div>
 
-		<!-- Desktop -->
-		<div id="desktop" class="relative flex-1 overflow-hidden">
+		<!--
+			Desktop. The wallpaper and the stage sit outside #desktop because
+			#desktop is the scroller: anything inside it scrolls away, and both
+			of these describe the visible area rather than the content.
+		-->
+		<div class="relative flex-1 overflow-hidden">
 			<img
 				src="/wallpaper.png"
 				alt="Wallpaper of a gradient"
 				class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
 			/>
 
-			<Window title="jake@jasi:~" x={60} y={40} width={620} height={430} />
-			<Window title="jake@jasi:~/repos/jasi" x={720} y={130} width={520} height={360} focused />
+			<!--
+				Invisible container a tapped window maximizes into: a centred
+				column with gutters, never edge to edge.
+			-->
+			<div
+				id="stage"
+				aria-hidden="true"
+				class="pointer-events-none absolute inset-x-6 inset-y-12 mx-auto max-w-[800px]"
+			>
+			</div>
+
+			<!--
+				Windows keep the positions they were given. A viewport too small
+				to hold them scrolls instead of shoving them around.
+			-->
+			<div id="desktop" class="absolute inset-0 overflow-auto">
+				<!-- Height is sized to the sidesfetch banner: enough that it never scrolls. -->
+				<Window title="jake@jasi:~" x={194} y={16} width={858} height={176}>
+					<Terminal />
+				</Window>
+				<Window
+					title="blog-ten-eosin-jm9h92qif3.vercel.app"
+					x={194}
+					y={207}
+					width={370}
+					height={454}
+					focused
+				>
+					<Browser src="https://blog-ten-eosin-jm9h92qif3.vercel.app" title="Jacob Sides' blog" />
+				</Window>
+			</div>
 		</div>
 	</main>
 </Layout>

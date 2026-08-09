@@ -1,0 +1,54 @@
+---
+/**
+ * A static shell transcript: one `sidesfetch` invocation and its banner.
+ * Colours come from the Catppuccin Mocha ANSI set in global.css, so the
+ * window reads as the Omarchy terminal it is imitating.
+ */
+interface Props {
+	user?: string;
+	host?: string;
+	cwd?: string;
+}
+
+const { user = 'jake', host = 'jasi', cwd = '~' } = Astro.props;
+
+// figlet, ANSI Shadow. The box-drawing glyphs are the letters' own bevels, not
+// a separate shadow — so this renders in one colour, the way a terminal does.
+const ART = String.raw`
+     ██╗ █████╗  ██████╗ ██████╗ ██████╗     ███████╗██╗██████╗ ███████╗███████╗
+     ██║██╔══██╗██╔════╝██╔═══██╗██╔══██╗    ██╔════╝██║██╔══██╗██╔════╝██╔════╝
+     ██║███████║██║     ██║   ██║██████╔╝    ███████╗██║██║  ██║█████╗  ███████╗
+██   ██║██╔══██║██║     ██║   ██║██╔══██╗    ╚════██║██║██║  ██║██╔══╝  ╚════██║
+╚█████╔╝██║  ██║╚██████╗╚██████╔╝██████╔╝    ███████║██║██████╔╝███████╗███████║
+ ╚════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═════╝     ╚══════╝╚═╝╚═════╝ ╚══════╝╚══════╝
+`.replace(/^\n|\n$/g, '');
+
+// 80 columns at CaskaydiaMono's 0.586em advance. Below that width the cell
+// shrinks to keep the banner whole, rather than handing the user a scrollbar.
+const COLUMNS = 'calc(100cqi / 46.875)';
+---
+
+<div class="h-full w-full overflow-hidden bg-term-bg p-2 [container-type:inline-size]">
+	<div
+		class="w-max font-mono leading-tight text-term-fg"
+		style={`font-size: min(13px, ${COLUMNS})`}
+	>
+		<p>
+			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
+				>{cwd}</span
+			><span>$ </span><span>sidesfetch</span>
+		</p>
+
+		{/* The expression hugs the tags: whitespace here would land in the banner. */}
+		<pre
+			role="img"
+			aria-label="Jacob Sides"
+			class="my-1 leading-none text-term-magenta">{ART}</pre>
+
+		<p>
+			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
+				>{cwd}</span
+			><span>$ </span><span data-term-cursor aria-hidden="true">█</span>
+		</p>
+	</div>
+</div>

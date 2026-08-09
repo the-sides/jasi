@@ -1,0 +1,22 @@
+---
+/**
+ * An embedded site, filling a window like a browser would.
+ *
+ * The frame is inert until its window has focus: an iframe swallows pointer
+ * events, so without this a click on the window body would never reach the WM
+ * and the window could neither be raised nor tapped to maximize. Click once to
+ * focus, then interact — the same bargain a tiling WM makes.
+ */
+interface Props {
+	src: string;
+	title: string;
+}
+
+const { src, title } = Astro.props;
+---
+
+<iframe
+	src={src}
+	title={title}
+	class="h-full w-full border-0 bg-term-bg pointer-events-none group-data-[focused]:pointer-events-auto"
+	referrerpolicy="no-referrer-when-downgrade"></iframe>
