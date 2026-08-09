@@ -1,0 +1,36 @@
+---
+/**
+ * A document filling a window, the way a PDF viewer would.
+ *
+ * Inert until its window has focus, for the same reason as Browser: an embedded
+ * viewer swallows pointer events, so without this a click on the window body
+ * would never reach the WM and the window could neither be raised nor tapped to
+ * maximize. Click once to focus, then interact.
+ *
+ * `toolbar=0` drops the built-in viewer chrome so the window's own groupbar is
+ * the only chrome on screen; `view=FitH` sizes the page to the window's width.
+ * Both are hints — a viewer that ignores them still renders the document. The
+ * fallback below is what a browser with no PDF viewer at all gets instead.
+ */
+interface Props {
+	src: string;
+	title: string;
+}
+
+const { src, title } = Astro.props;
+---
+
+<object
+	data={`${src}#toolbar=0&navpanes=0&view=FitH`}
+	type="application/pdf"
+	title={title}
+	class="h-full w-full bg-term-bg pointer-events-none group-data-[focused]:pointer-events-auto"
+>
+	<div class="flex h-full w-full items-center justify-center p-4 text-center font-mono text-sm">
+		<p class="text-fg-dim">
+			<a href={src} download class="text-accent underline underline-offset-2">Download {title}</a>
+			<br />
+			<span class="text-xs">This browser can't display PDFs inline.</span>
+		</p>
+	</div>
+</object>
