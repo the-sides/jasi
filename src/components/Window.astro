@@ -6,7 +6,11 @@
  * user drags or resizes, at which point wm.ts pins that window to pixels.
  */
 interface Props {
-	title: string;
+	/**
+	 * What the groupbar reads. Windows whose title is more than a filename pass
+	 * the `title` slot instead and style the strip themselves.
+	 */
+	title?: string;
 	x?: number;
 	y?: number;
 	w?: number;
@@ -14,7 +18,7 @@ interface Props {
 	focused?: boolean;
 }
 
-const { title, x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
+const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
 ---
 
 <!--
@@ -30,9 +34,9 @@ const { title, x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
 >
 	<header
 		data-drag
-		class="flex h-groupbar shrink-0 cursor-grab items-center justify-center bg-crust/95 px-2 font-mono text-[11px] leading-none text-fg-dim select-none group-data-[focused]:text-fg"
+		class="flex h-groupbar shrink-0 cursor-grab items-center justify-center gap-2 bg-crust/95 px-2 font-mono text-[11px] leading-none text-fg-dim select-none group-data-[focused]:text-fg"
 	>
-		<span class="truncate">{title}</span>
+		<slot name="title"><span class="truncate">{title}</span></slot>
 	</header>
 
 	<div
