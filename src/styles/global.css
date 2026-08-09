@@ -189,6 +189,13 @@
 	animation: term-blink 1.06s step-end infinite;
 }
 
+/* A prompt that is not taking input holds its cursor still and dims it, the
+ * same tell an unfocused terminal gives. */
+[data-term-line]:not([data-active]) [data-term-cursor] {
+	animation: none;
+	opacity: 0.5;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	[data-term-cursor] {
 		animation: none;

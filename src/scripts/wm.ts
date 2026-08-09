@@ -56,6 +56,12 @@ const HOLD_MS = 700;
 
 const stacked = window.matchMedia(STACK_QUERY);
 
+/**
+ * How a window built after the page loaded is taken into the stack. Set by
+ * initDesktop, because the stacking order it joins lives in there.
+ */
+let adopt: ((win: HTMLElement) => void) | null = null;
+
 function place(win: HTMLElement, x: number, y: number) {
 	win.style.transform = `translate(${x}px, ${y}px)`;
 }
@@ -306,7 +312,25 @@ function initDesktop(desktop: HTMLElement) {
 	}
 
 	window.addEventListener('resize', reflow);
+
+	adopt = (win) => {
+		win.style.zIndex = String(++top);
+		focus(win);
+	};
 }
 
 const desktop = document.getElementById('desktop');
 if (desktop) initDesktop(desktop);
+
+/**
+ * Put a window built at runtime onto the desktop: topmost, focused and scrolled
+ * to. Nothing else about it is special — it carries the same chrome and the
+ * same fractional placement as the windows the page was served with, so it
+ * drags, resizes and stacks like any of them.
+ */
+export function openWindow(win: HTMLElement) {
+	if (!desktop || !adopt) return;
+	desktop.append(win);
+	adopt(win);
+	win.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}

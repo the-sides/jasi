@@ -4,6 +4,9 @@
  * global.css sizes from the viewport. Nothing here is in pixels, so the
  * arrangement scales instead of being pinned to one screen size — until the
  * user drags or resizes, at which point wm.ts pins that window to pixels.
+ *
+ * data-title and data-body are handles for windows opened at runtime: spawn.ts
+ * clones this chrome out of a <template> and fills those two in.
  */
 interface Props {
 	/**
@@ -36,13 +39,13 @@ const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.pr
 		data-drag
 		class="flex h-groupbar shrink-0 cursor-grab items-center justify-center gap-2 bg-crust/95 px-2 font-mono text-[11px] leading-none text-fg-dim select-none group-data-[focused]:text-fg"
 	>
-		<slot name="title"><span class="truncate">{title}</span></slot>
+		<slot name="title"><span data-title class="truncate">{title}</span></slot>
 	</header>
 
 	<div
 		class="relative min-h-0 flex-1 border-2 border-border-idle bg-base shadow-lg shadow-black/40 group-data-[focused]:border-accent"
 	>
-		<div class="h-full w-full overflow-hidden bg-term-bg">
+		<div data-body class="h-full w-full overflow-hidden bg-term-bg">
 			<slot />
 		</div>
 

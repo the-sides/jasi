@@ -1,8 +1,12 @@
 ---
 /**
- * A static shell transcript: one `sidesfetch` invocation and its banner.
- * Colours come from the Catppuccin Mocha ANSI set in global.css, so the
- * window reads as the Omarchy terminal it is imitating.
+ * The shell: one `sidesfetch` invocation and its banner, then a prompt that
+ * takes commands (see commands.ts). Colours come from the Catppuccin Mocha
+ * ANSI set in global.css, so the window reads as the Omarchy terminal it is
+ * imitating.
+ *
+ * Nothing is ever printed back. A command here is a shortcut that acts on the
+ * desktop, so the transcript above the prompt stays exactly as it was.
  */
 interface Props {
 	user?: string;
@@ -46,10 +50,62 @@ const COLUMNS = 'calc(100cqi / 46.875)';
 			aria-label="Jacob Sides"
 			class="my-[1.25em] leading-none text-term-magenta">{ART}</pre>
 
-		<p>
+		{/*
+			The live prompt. The input is invisible and laid over the line; what was
+			typed is echoed beside a block cursor, so the caret stays the terminal's
+			own rather than the browser's. 16px on the input is only there to stop
+			iOS zooming in on focus — none of its text is ever seen.
+		*/}
+		<p data-term-line class="relative">
 			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
 				>{cwd}</span
-			><span>$ </span><span data-term-cursor aria-hidden="true">█</span>
+			><span>$ </span><span data-term-echo></span><span data-term-cursor aria-hidden="true">█</span>
+			<input
+				data-term-input
+				type="text"
+				aria-label="Command"
+				autocomplete="off"
+				autocapitalize="off"
+				autocorrect="off"
+				spellcheck="false"
+				class="absolute inset-0 w-full bg-transparent text-[16px] opacity-0 outline-none"
+			/>
 		</p>
 	</div>
 </div>
+
+<script>
+	import { run } from '../scripts/commands';
+
+	for (const line of document.querySelectorAll<HTMLElement>('[data-term-line]')) {
+		const input = line.querySelector<HTMLInputElement>('[data-term-input]');
+		const echo = line.querySelector<HTMLElement>('[data-term-echo]');
+		if (!input || !echo) continue;
+
+		input.addEventListener('input', () => {
+			echo.textContent = input.value;
+		});
+
+		input.addEventListener('keydown', (e) => {
+			if (e.key !== 'Enter') return;
+			run(input.value);
+			input.value = '';
+			echo.textContent = '';
+		});
+
+		// The cursor blinks while the line is taking input, and sits still when it
+		// is not — the same tell an unfocused terminal gives.
+		input.addEventListener('focus', () => (line.dataset.active = 'true'));
+		input.addEventListener('blur', () => delete line.dataset.active);
+
+		// Anywhere in the window is the prompt: a click on the window's shield or
+		// its banner puts the caret back on the line, the way clicking a terminal
+		// does. Not on a touch pointer, where that would throw up the keyboard on
+		// a tap meant to maximize the window.
+		const win = line.closest<HTMLElement>('[data-window]');
+		const coarse = window.matchMedia('(pointer: coarse)');
+		win?.addEventListener('click', () => {
+			if (!coarse.matches) input.focus();
+		});
+	}
+</script>
