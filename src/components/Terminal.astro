@@ -39,11 +39,12 @@ const COLUMNS = 'calc(100cqi / 46.875)';
 			><span>$ </span><span>sidesfetch</span>
 		</p>
 
-		{/* The expression hugs the tags: whitespace here would land in the banner. */}
+		{/* The expression hugs the tags: whitespace here would land in the banner.
+		    The margin is in em, so it stays one blank line tall as the cell shrinks. */}
 		<pre
 			role="img"
 			aria-label="Jacob Sides"
-			class="my-1 leading-none text-term-magenta">{ART}</pre>
+			class="my-[1.25em] leading-none text-term-magenta">{ART}</pre>
 
 		<p>
 			<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
