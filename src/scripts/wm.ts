@@ -1,10 +1,20 @@
 /**
  * Floating window manager for the desktop: focus + raise, drag by the
- * groupbar, resize from the right/bottom/corner edges. Windows are absolutely
- * positioned inside #desktop and moved with a transform.
+ * groupbar, resize from the right/bottom/corner edges, and — in touch mode —
+ * tap-to-maximize into #stage, an invisible gutter-inset container. Windows
+ * are absolutely positioned inside #desktop and moved with a transform.
  */
 
+import { getMode, onModeChange } from './mode';
+
 type Mode = 'move' | 'e' | 's' | 'se';
+
+interface Geometry {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
 
 interface Drag {
 	win: HTMLElement;
@@ -15,10 +25,15 @@ interface Drag {
 	originY: number;
 	originW: number;
 	originH: number;
+	moved: boolean;
 }
 
 const MIN_WIDTH = 220;
 const MIN_HEIGHT = 120;
+/** Pointer travel (px) past which a gesture is a drag, not a tap. */
+const TAP_SLOP = 4;
+/** Keep in sync with the transition in global.css. */
+const SNAP_MS = 160;
 
 const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), Math.max(min, max));
 
@@ -28,8 +43,59 @@ function place(win: HTMLElement, x: number, y: number) {
 	win.style.transform = `translate(${x}px, ${y}px)`;
 }
 
+function apply(win: HTMLElement, g: Geometry) {
+	win.style.width = `${g.w}px`;
+	win.style.height = `${g.h}px`;
+	place(win, g.x, g.y);
+}
+
+function geometryOf(win: HTMLElement): Geometry {
+	return {
+		x: Number(win.dataset.x ?? 0),
+		y: Number(win.dataset.y ?? 0),
+		w: win.offsetWidth,
+		h: win.offsetHeight,
+	};
+}
+
 function initDesktop(desktop: HTMLElement) {
+	const stage = desktop.querySelector<HTMLElement>('#stage');
 	const windows = () => [...desktop.querySelectorAll<HTMLElement>('[data-window]')];
+
+	/** The area a maximized window fills: the invisible stage, gutters included. */
+	function stageGeometry(): Geometry {
+		const box = (stage ?? desktop).getBoundingClientRect();
+		const origin = desktop.getBoundingClientRect();
+		return {
+			x: Math.round(box.left - origin.left),
+			y: Math.round(box.top - origin.top),
+			w: Math.round(box.width),
+			h: Math.round(box.height),
+		};
+	}
+
+	/** Animate the next geometry change, then get out of the way of dragging. */
+	function snap(win: HTMLElement) {
+		win.dataset.snapping = 'true';
+		setTimeout(() => delete win.dataset.snapping, SNAP_MS + 40);
+	}
+
+	function maximize(win: HTMLElement) {
+		win.dataset.restore = JSON.stringify(geometryOf(win));
+		win.dataset.maximized = 'true';
+		snap(win);
+		apply(win, stageGeometry());
+	}
+
+	function unmaximize(win: HTMLElement, { animate = true } = {}) {
+		if (!win.dataset.maximized) return;
+		const restore = win.dataset.restore;
+		delete win.dataset.maximized;
+		delete win.dataset.restore;
+		if (!restore) return;
+		if (animate) snap(win);
+		apply(win, JSON.parse(restore) as Geometry);
+	}
 
 	let top = 10;
 	for (const win of windows()) win.style.zIndex = String(top++);
@@ -40,6 +106,15 @@ function initDesktop(desktop: HTMLElement) {
 		}
 		win.dataset.focused = 'true';
 		if (Number(win.style.zIndex) < top) win.style.zIndex = String(++top);
+	}
+
+	/** A tap toggles the window between the stage and where it came from. */
+	function toggleMaximize(win: HTMLElement) {
+		for (const other of windows()) {
+			if (other !== win) unmaximize(other);
+		}
+		if (win.dataset.maximized) unmaximize(win);
+		else maximize(win);
 	}
 
 	let drag: Drag | null = null;
@@ -53,8 +128,7 @@ function initDesktop(desktop: HTMLElement) {
 		focus(win);
 
 		const handle = target.closest<HTMLElement>('[data-resize]');
-		const mode = handle ? (handle.dataset.resize as Mode) : target.closest('[data-drag]') ? 'move' : null;
-		if (!mode) return;
+		const mode: Mode = handle ? (handle.dataset.resize as Mode) : 'move';
 
 		drag = {
 			win,
@@ -65,11 +139,10 @@ function initDesktop(desktop: HTMLElement) {
 			originY: Number(win.dataset.y ?? 0),
 			originW: win.offsetWidth,
 			originH: win.offsetHeight,
+			moved: false,
 		};
 
 		desktop.setPointerCapture(e.pointerId);
-		document.body.classList.add('select-none');
-		if (mode === 'move') win.dataset.dragging = 'true';
 		e.preventDefault();
 	});
 
@@ -77,6 +150,17 @@ function initDesktop(desktop: HTMLElement) {
 		if (!drag) return;
 		const dx = e.clientX - drag.pointerX;
 		const dy = e.clientY - drag.pointerY;
+
+		if (!drag.moved) {
+			if (Math.abs(dx) < TAP_SLOP && Math.abs(dy) < TAP_SLOP) return;
+			drag.moved = true;
+			document.body.classList.add('select-none');
+			// Dragging a maximized window pulls it back out of the stage.
+			delete drag.win.dataset.maximized;
+			delete drag.win.dataset.restore;
+			if (drag.mode === 'move') drag.win.dataset.dragging = 'true';
+		}
+
 		const { win, mode } = drag;
 
 		if (mode === 'move') {
@@ -98,18 +182,33 @@ function initDesktop(desktop: HTMLElement) {
 
 	function endDrag(e: PointerEvent) {
 		if (!drag) return;
-		delete drag.win.dataset.dragging;
+		const { win, mode, moved } = drag;
 		drag = null;
+
+		delete win.dataset.dragging;
 		document.body.classList.remove('select-none');
 		if (desktop.hasPointerCapture(e.pointerId)) desktop.releasePointerCapture(e.pointerId);
+
+		if (!moved && mode === 'move' && getMode() === 'touch') toggleMaximize(win);
 	}
 
 	desktop.addEventListener('pointerup', endDrag);
 	desktop.addEventListener('pointercancel', endDrag);
 
-	// Keep windows on screen, both at startup and when the viewport shrinks.
-	function clampAll() {
+	// Leaving touch mode hands the windows back: with no tap gesture, a
+	// maximized window would otherwise be stuck on the stage.
+	onModeChange((next) => {
+		if (next !== 'desktop') return;
+		for (const win of windows()) unmaximize(win);
+	});
+
+	// Refit the stage and keep windows on screen, at startup and on resize.
+	function reflow() {
 		for (const win of windows()) {
+			if (win.dataset.maximized) {
+				apply(win, stageGeometry());
+				continue;
+			}
 			place(
 				win,
 				clamp(Number(win.dataset.x ?? 0), 0, desktop.clientWidth - win.offsetWidth),
@@ -118,8 +217,8 @@ function initDesktop(desktop: HTMLElement) {
 		}
 	}
 
-	clampAll();
-	window.addEventListener('resize', clampAll);
+	reflow();
+	window.addEventListener('resize', reflow);
 }
 
 const desktop = document.getElementById('desktop');
