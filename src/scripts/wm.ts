@@ -1,8 +1,13 @@
 /**
  * Floating window manager for the desktop: focus + raise, drag by the
  * groupbar, resize from the right/bottom/corner edges, and — in touch mode —
- * tap-to-maximize into #stage, an invisible gutter-inset container. Windows
- * are absolutely positioned inside #desktop and moved with a transform.
+ * tap-to-maximize into #stage, an invisible gutter-inset container.
+ *
+ * Where a window sits is global.css's business, not this file's: windows are
+ * laid out as fractions of the layout box and carry no pixel geometry until
+ * they are touched. Dragging or resizing one pins it to pixels for good; the
+ * rest keep tracking the viewport. Below the stacking breakpoint every window
+ * is handed back, because there the stack is the layout.
  *
  * Positions are only ever floored at the origin, never capped: a window that
  * runs past the viewport extends #desktop's scrollable area instead of being
@@ -38,10 +43,14 @@ const MIN_HEIGHT = 120;
 const TAP_SLOP = 4;
 /** Keep in sync with the transition in global.css. */
 const SNAP_MS = 160;
+/** Keep in sync with the stacking media query in global.css. */
+const STACK_QUERY = '(max-width: 767px)';
+/** How long a shield is held up if the gesture never produces a click. */
+const HOLD_MS = 700;
+
+const stacked = window.matchMedia(STACK_QUERY);
 
 function place(win: HTMLElement, x: number, y: number) {
-	win.dataset.x = String(x);
-	win.dataset.y = String(y);
 	win.style.transform = `translate(${x}px, ${y}px)`;
 }
 
@@ -51,13 +60,18 @@ function apply(win: HTMLElement, g: Geometry) {
 	place(win, g.x, g.y);
 }
 
-function geometryOf(win: HTMLElement): Geometry {
-	return {
-		x: Number(win.dataset.x ?? 0),
-		y: Number(win.dataset.y ?? 0),
-		w: win.offsetWidth,
-		h: win.offsetHeight,
-	};
+/** Drop the pixel geometry, handing the window back to the layout in the CSS. */
+function unpin(win: HTMLElement) {
+	win.style.transform = '';
+	win.style.width = '';
+	win.style.height = '';
+}
+
+function release(win: HTMLElement) {
+	delete win.dataset.floating;
+	delete win.dataset.maximized;
+	delete win.dataset.restore;
+	unpin(win);
 }
 
 function initDesktop(desktop: HTMLElement) {
@@ -65,12 +79,11 @@ function initDesktop(desktop: HTMLElement) {
 	const windows = () => [...desktop.querySelectorAll<HTMLElement>('[data-window]')];
 
 	/**
-	 * The area a maximized window fills: the invisible stage, gutters included.
-	 * The stage tracks the viewport, so its position is folded back into the
-	 * scrolled content — a window maximizes over whatever you are looking at.
+	 * An element's box in the desktop's own coordinates, scroll folded back in —
+	 * the frame every geometry here is written in.
 	 */
-	function stageGeometry(): Geometry {
-		const box = (stage ?? desktop).getBoundingClientRect();
+	function contentRect(el: Element): Geometry {
+		const box = el.getBoundingClientRect();
 		const origin = desktop.getBoundingClientRect();
 		return {
 			x: Math.round(box.left - origin.left + desktop.scrollLeft),
@@ -80,6 +93,15 @@ function initDesktop(desktop: HTMLElement) {
 		};
 	}
 
+	/**
+	 * The area a maximized window fills: the invisible stage, gutters included.
+	 * The stage tracks the viewport, so its position is folded back into the
+	 * scrolled content — a window maximizes over whatever you are looking at.
+	 */
+	function stageGeometry(): Geometry {
+		return contentRect(stage ?? desktop);
+	}
+
 	/** Animate the next geometry change, then get out of the way of dragging. */
 	function snap(win: HTMLElement) {
 		win.dataset.snapping = 'true';
@@ -87,7 +109,9 @@ function initDesktop(desktop: HTMLElement) {
 	}
 
 	function maximize(win: HTMLElement) {
-		win.dataset.restore = JSON.stringify(geometryOf(win));
+		// Only a window that was already pinned has somewhere of its own to go
+		// back to; the rest return to the layout box they came from.
+		if (win.dataset.floating) win.dataset.restore = JSON.stringify(contentRect(win));
 		win.dataset.maximized = 'true';
 		snap(win);
 		apply(win, stageGeometry());
@@ -98,9 +122,21 @@ function initDesktop(desktop: HTMLElement) {
 		const restore = win.dataset.restore;
 		delete win.dataset.maximized;
 		delete win.dataset.restore;
-		if (!restore) return;
 		if (animate) snap(win);
-		apply(win, JSON.parse(restore) as Geometry);
+		if (restore) apply(win, JSON.parse(restore) as Geometry);
+		else unpin(win);
+	}
+
+	/**
+	 * Keep an unfocused window's shield up for the rest of the gesture. Focus
+	 * alone would drop it mid-click, and the click would land inside the frame
+	 * it was covering — one tap would both raise the window and follow a link.
+	 */
+	function hold(win: HTMLElement) {
+		win.dataset.holding = 'true';
+		const drop = () => delete win.dataset.holding;
+		desktop.addEventListener('click', drop, { capture: true, once: true });
+		setTimeout(drop, HOLD_MS);
 	}
 
 	let top = 10;
@@ -131,20 +167,28 @@ function initDesktop(desktop: HTMLElement) {
 		const win = target.closest<HTMLElement>('[data-window]');
 		if (!win) return;
 
+		const shielded = target.closest('[data-shield]') !== null;
 		focus(win);
+		if (shielded) hold(win);
+
+		// A stacked window has nowhere to be dragged to, and a press on the
+		// shield is spent raising the window. Either way the gesture ends here —
+		// no capture and no preventDefault, so touch scrolling still works.
+		if (stacked.matches || shielded) return;
 
 		const handle = target.closest<HTMLElement>('[data-resize]');
 		const mode: Mode = handle ? (handle.dataset.resize as Mode) : 'move';
+		const origin = contentRect(win);
 
 		drag = {
 			win,
 			mode,
 			pointerX: e.clientX,
 			pointerY: e.clientY,
-			originX: Number(win.dataset.x ?? 0),
-			originY: Number(win.dataset.y ?? 0),
-			originW: win.offsetWidth,
-			originH: win.offsetHeight,
+			originX: origin.x,
+			originY: origin.y,
+			originW: origin.w,
+			originH: origin.h,
 			moved: false,
 		};
 
@@ -164,6 +208,10 @@ function initDesktop(desktop: HTMLElement) {
 			// Dragging a maximized window pulls it back out of the stage.
 			delete drag.win.dataset.maximized;
 			delete drag.win.dataset.restore;
+			// Pin it: a window the user has moved keeps its own geometry from
+			// here, rather than being re-placed as the viewport changes.
+			drag.win.dataset.floating = 'true';
+			apply(drag.win, { x: drag.originX, y: drag.originY, w: drag.originW, h: drag.originH });
 			if (drag.mode === 'move') drag.win.dataset.dragging = 'true';
 		}
 
@@ -204,9 +252,17 @@ function initDesktop(desktop: HTMLElement) {
 		for (const win of windows()) unmaximize(win);
 	});
 
+	// Narrowing to the stack takes every window back off the user: the stack is
+	// a single column in source order, and a window pinned to pixels would sit
+	// outside it. Widening again leaves them with the fluid layout they now have.
+	stacked.addEventListener('change', (e) => {
+		if (e.matches) for (const win of windows()) release(win);
+	});
+
 	// Refit maximized windows to the resized stage. Floating windows are left
 	// exactly where they are — a smaller viewport just means more to scroll.
 	function reflow() {
+		if (stacked.matches) return;
 		for (const win of windows()) {
 			if (win.dataset.maximized) apply(win, stageGeometry());
 		}

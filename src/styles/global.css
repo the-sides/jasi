@@ -37,6 +37,72 @@
 }
 
 /*
+ * Window layout.
+ *
+ * Windows are placed as fractions of a layout box — 90% of the screen wide,
+ * centred, with a gutter above and below — rather than at fixed pixel offsets,
+ * so the arrangement is the same shape on any display. #screen is the size
+ * container the cq units resolve against, which is why the box tracks the
+ * desktop area rather than the window's own size.
+ *
+ * The height is clamped: past a point a taller viewport should give the
+ * windows breathing room, not stretch them.
+ *
+ * Dragging or resizing replaces these with inline pixel geometry (see wm.ts) —
+ * from then on that window stays where the user put it.
+ */
+#screen {
+	--gutter-y: 16px;
+	--layout-x: 5cqw;
+	--layout-w: 90cqw;
+	--layout-h: clamp(480px, calc(100cqh - 2 * var(--gutter-y)), 880px);
+}
+
+[data-window] {
+	width: calc(var(--fw) * var(--layout-w));
+	height: calc(var(--fh) * var(--layout-h));
+	transform: translate(
+		calc(var(--layout-x) + var(--fx) * var(--layout-w)),
+		calc(var(--gutter-y) + var(--fy) * var(--layout-h))
+	);
+}
+
+/* Held up for the length of the gesture that raises a window — see wm.ts. */
+[data-window][data-holding] [data-shield] {
+	display: block;
+}
+
+/* The area a tapped window maximizes into is exactly the layout box. */
+#stage {
+	left: var(--layout-x);
+	top: var(--gutter-y);
+	width: var(--layout-w);
+	height: var(--layout-h);
+}
+
+/*
+ * Narrow screens: one column, in source order. There is no room for an
+ * arrangement here and nothing to drag with, so the windows stack and the
+ * desktop scrolls — wm.ts drops its inline geometry at this width so these
+ * rules are the only thing placing them.
+ */
+@media (max-width: 767px) {
+	#desktop {
+		display: flex;
+		flex-direction: column;
+		gap: var(--gutter-y);
+		padding: var(--gutter-y) var(--layout-x);
+	}
+
+	[data-window] {
+		position: relative;
+		flex: none;
+		width: 100%;
+		transform: none;
+	}
+}
+
+/*
  * Desktop scrollbar: a translucent thumb floating on the wallpaper, no track
  * and no buttons. The transparent border plus background-clip is what insets
  * the thumb, since ::-webkit-scrollbar-thumb ignores padding.

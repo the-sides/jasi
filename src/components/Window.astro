@@ -1,14 +1,20 @@
 ---
+/**
+ * Placement is fractional: x/y/w/h are fractions (0–1) of the layout box, which
+ * global.css sizes from the viewport. Nothing here is in pixels, so the
+ * arrangement scales instead of being pinned to one screen size — until the
+ * user drags or resizes, at which point wm.ts pins that window to pixels.
+ */
 interface Props {
 	title: string;
 	x?: number;
 	y?: number;
-	width?: number;
-	height?: number;
+	w?: number;
+	h?: number;
 	focused?: boolean;
 }
 
-const { title, x = 40, y = 40, width = 620, height = 420, focused = false } = Astro.props;
+const { title, x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
 ---
 
 <!--
@@ -18,10 +24,8 @@ const { title, x = 40, y = 40, width = 620, height = 420, focused = false } = As
 -->
 <section
 	data-window
-	data-x={x}
-	data-y={y}
 	data-focused={focused ? 'true' : undefined}
-	style={`transform: translate(${x}px, ${y}px); width: ${width}px; height: ${height}px;`}
+	style={`--fx: ${x}; --fy: ${y}; --fw: ${w}; --fh: ${h};`}
 	class="group absolute top-0 left-0 flex flex-col gap-gap-in"
 >
 	<header
@@ -36,6 +40,19 @@ const { title, x = 40, y = 40, width = 620, height = 420, focused = false } = As
 	>
 		<div class="h-full w-full overflow-hidden bg-term-bg">
 			<slot />
+		</div>
+
+		<!--
+			Click-to-focus shield. An embedded frame swallows pointer, wheel and
+			touch events, so an unfocused window keeps a pane over its contents:
+			the first click reaches the WM and raises the window, and only then
+			does the frame get the pointer. Same bargain a tiling WM makes.
+		-->
+		<div
+			data-shield
+			aria-hidden="true"
+			class="absolute inset-0 group-data-[focused]:hidden"
+		>
 		</div>
 
 		<div data-resize="e" class="absolute top-0 -right-1 h-full w-2 cursor-e-resize"></div>
