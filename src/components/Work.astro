@@ -2,8 +2,8 @@
 /**
  * The work: one window per project, dealt out in a cascade running from the top
  * right down to the bottom left — the way a pile of windows looks before anyone
- * tidies it up. Every step down clears the groupbar and label band of the
- * window behind it, so each title in the pile stays readable.
+ * tidies it up. Every step down clears the groupbar of the window behind it,
+ * so each title in the pile stays readable.
  *
  * Source order is stacking order — wm.ts hands out z-index in document order —
  * so the pile runs oldest at the back to newest at the front, and clicking a
@@ -78,9 +78,10 @@ const W = 0.5;
 const H = 0.46;
 
 /**
- * A step has to clear the window behind it: 22px of groupbar, its 5px gap and
- * the label band under that, so about 50px. The layout box is never shorter
- * than 480px (global.css), and a tenth of the shortest one still clears it.
+ * A step has to clear the window behind it: 22px of groupbar plus its 5px gap.
+ * The layout box is never shorter than 480px (global.css), and a tenth of the
+ * shortest one clears that with room to spare — enough of the screenshot below
+ * each title shows to tell the windows apart.
  */
 const STEP_Y = 0.1;
 
@@ -93,19 +94,23 @@ const round = (n: number) => Math.round(n * 1e4) / 1e4;
 
 {
 	PROJECTS.map((project, i) => (
-		<Window
-			title={`work/${project.slug}.webp`}
-			x={round(1 - W - i * STEP_X)}
-			y={round(TOP + i * STEP_Y)}
-			w={W}
-			h={H}
-		>
-			<Shot
-				src={`/work/${project.slug}.webp`}
-				name={project.name}
-				blurb={project.blurb}
-				note={project.note}
-			/>
+		<Window x={round(1 - W - i * STEP_X)} y={round(TOP + i * STEP_Y)} w={W} h={H}>
+			{/*
+				The groupbar is the label: a cascade only leaves the top strip of
+				each window showing, so the strip has to say what the window is.
+				Unfocused windows dim as a whole rather than through the text
+				colour, which is carrying the name/blurb/note hierarchy instead.
+			*/}
+			<div
+				slot="title"
+				class="flex min-w-0 items-baseline gap-2 opacity-70 group-data-[focused]:opacity-100"
+			>
+				<span class="shrink-0 text-fg">{project.name}</span>
+				<span class="truncate text-fg-dim">{project.blurb}</span>
+				{project.note && <span class="shrink-0 text-accent">{project.note}</span>}
+			</div>
+
+			<Shot src={`/work/${project.slug}.webp`} name={project.name} />
 		</Window>
 	))
 }
