@@ -1,16 +1,18 @@
 ---
 /**
- * The work: one window per project, dealt out in a cascade running from the top
- * right down to the bottom left — the way a pile of windows looks before anyone
- * tidies it up. Every step down clears the groupbar of the window behind it,
- * so each title in the pile stays readable.
+ * The work: a banner naming the section, then one window per project, dealt out
+ * in a cascade running from the top right down to the bottom left — the way a
+ * pile of windows looks before anyone tidies it up. Every step down clears the
+ * groupbar of the window behind it, so each title in the pile stays readable.
  *
  * Source order is stacking order — wm.ts hands out z-index in document order —
  * so the pile runs oldest at the back to newest at the front, and clicking a
- * window buried in it raises it, the same as any other window here.
+ * window buried in it raises it, the same as any other window here. It is also
+ * the order the windows stack in on a phone, which is why the banner is first.
  */
 import Window from './Window.astro';
 import Shot from './Shot.astro';
+import Terminal from './Terminal.astro';
 
 interface Props {
 	/**
@@ -90,7 +92,35 @@ const STEP_X = (1 - W) / (PROJECTS.length - 1);
 
 /** Fractions are written into CSS custom properties; keep them short. */
 const round = (n: number) => Math.round(n * 1e4) / 1e4;
+
+// figlet, ANSI Shadow — the same font the site's own banner is set in.
+const WORK = String.raw`
+██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
+██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
+██║ █╗ ██║██║   ██║██████╔╝█████╔╝
+██║███╗██║██║   ██║██╔══██╗██╔═██╗
+╚███╔███╔╝╚██████╔╝██║  ██║██║  ██╗
+ ╚══╝╚══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝
+`.replace(/^\n|\n$/g, '');
+
+/**
+ * The banner sits in the column the cascade leaves empty: flush with the left
+ * edge, under the blog window, and stopping a gap short of the second window
+ * in the pile — a heading is the one window here nothing should overlap.
+ *
+ * The height holds the prompt, a blank line and six rows of art at the 13px the
+ * terminal caps its cell at: ~158px, which a fifth of the layout box only
+ * covers on a tall screen. A little over that keeps the banner whole on a phone
+ * too, at the cost of some empty terminal below it on a desktop.
+ */
+const GAP_X = 0.013; // the same sliver the blog and the resume are parted by
+const BANNER_W = round(1 - W - STEP_X - GAP_X);
+const BANNER_H = 0.21;
 ---
+
+<Window title="jake@jasi:~/work" x={0} y={round(TOP)} w={BANNER_W} h={BANNER_H}>
+	<Terminal cwd="~/work" command="ls" art={WORK} label="Work" cursor={false} />
+</Window>
 
 {
 	PROJECTS.map((project, i) => (
