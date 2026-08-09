@@ -3,9 +3,8 @@
  * A document filling a window, the way a PDF viewer would.
  *
  * Inert until its window has focus, for the same reason as Browser: an embedded
- * viewer swallows pointer events, so without this a click on the window body
- * would never reach the WM and the window could neither be raised nor tapped to
- * maximize. Click once to focus, then interact.
+ * viewer swallows pointer and scroll events, so Window's shield covers it until
+ * the window is raised.
  *
  * `toolbar=0` drops the built-in viewer chrome so the window's own groupbar is
  * the only chrome on screen; `view=FitH` sizes the page to the window's width.
@@ -24,7 +23,7 @@ const { src, title } = Astro.props;
 	data={`${src}#toolbar=0&navpanes=0&view=FitH`}
 	type="application/pdf"
 	title={title}
-	class="h-full w-full bg-term-bg pointer-events-none group-data-[focused]:pointer-events-auto"
+	class="h-full w-full bg-term-bg"
 >
 	<div class="flex h-full w-full items-center justify-center p-4 text-center font-mono text-sm">
 		<p class="text-fg-dim">
