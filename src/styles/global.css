@@ -1,1 +1,26 @@
 @import 'tailwindcss';
+
+/* Catppuccin Mocha — the Omarchy default theme */
+@theme {
+	--color-base: #1e1e2e;
+	--color-mantle: #181825;
+	--color-crust: #11111b;
+	--color-surface0: #313244;
+	--color-surface1: #45475a;
+	--color-fg: #cdd6f4;
+	--color-fg-dim: #9399b2;
+	--color-accent: #89b4fa;
+	/* Hyprland's inactive border is a flat grey, not a theme colour */
+	--color-border-idle: #464646;
+
+	--font-mono: 'CaskaydiaMono Nerd Font', 'CaskaydiaCove Nerd Font', ui-monospace,
+		'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, monospace;
+
+	/* Hyprland decoration metrics */
+	--spacing-groupbar: 22px;
+	--spacing-gap-in: 5px;
+}
+
+[data-dragging] [data-drag] {
+	cursor: grabbing;
+}

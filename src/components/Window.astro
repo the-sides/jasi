@@ -1,0 +1,45 @@
+---
+interface Props {
+	title: string;
+	x?: number;
+	y?: number;
+	width?: number;
+	height?: number;
+	focused?: boolean;
+}
+
+const { title, x = 40, y = 40, width = 620, height = 420, focused = false } = Astro.props;
+---
+
+<!--
+	Window chrome modelled on Hyprland/Omarchy: a 22px groupbar strip floating
+	above the frame, separated by gaps_in, and a 2px border that turns accent
+	coloured on focus. No rounding, no buttons — same as the tiling WM.
+-->
+<section
+	data-window
+	data-x={x}
+	data-y={y}
+	data-focused={focused ? 'true' : undefined}
+	style={`transform: translate(${x}px, ${y}px); width: ${width}px; height: ${height}px;`}
+	class="group absolute top-0 left-0 flex flex-col gap-gap-in"
+>
+	<header
+		data-drag
+		class="flex h-groupbar shrink-0 cursor-grab items-center justify-center bg-crust/95 px-2 font-mono text-[11px] leading-none text-fg-dim select-none group-data-[focused]:text-fg"
+	>
+		<span class="truncate">{title}</span>
+	</header>
+
+	<div
+		class="relative min-h-0 flex-1 border-2 border-border-idle bg-base shadow-lg shadow-black/40 group-data-[focused]:border-accent"
+	>
+		<div class="h-full w-full overflow-hidden bg-black">
+			<slot />
+		</div>
+
+		<div data-resize="e" class="absolute top-0 -right-1 h-full w-2 cursor-e-resize"></div>
+		<div data-resize="s" class="absolute -bottom-1 left-0 h-2 w-full cursor-s-resize"></div>
+		<div data-resize="se" class="absolute -right-1 -bottom-1 z-10 h-3 w-3 cursor-se-resize"></div>
+	</div>
+</section>

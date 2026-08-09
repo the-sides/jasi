@@ -1,14 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Window from '../components/Window.astro';
 ---
 
 <Layout>
 	<main class="relative flex h-screen w-screen flex-col overflow-hidden">
 		<!-- Top bar -->
 		<div
-			class="z-20 grid w-full grid-cols-3 items-center bg-neutral-800 px-2 py-1 font-mono text-sm text-amber-100"
+			class="z-20 grid w-full grid-cols-3 items-center bg-crust px-2 py-1 font-mono text-sm text-fg"
 		>
-			<span class="justify-self-start">jasi</span>
+			<span class="justify-self-start text-fg-dim">jasi</span>
 			<span id="clock" class="text-center tabular-nums">--:--:--</span>
 			<span class="justify-self-end"></span>
 		</div>
@@ -20,12 +21,16 @@ import Layout from '../layouts/Layout.astro';
 				alt="Wallpaper of a gradient"
 				class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
 			/>
-			<!-- Windows mount here -->
+
+			<Window title="jake@jasi:~" x={60} y={40} width={620} height={430} />
+			<Window title="jake@jasi:~/repos/jasi" x={720} y={130} width={520} height={360} focused />
 		</div>
 	</main>
 </Layout>
 
 <script>
+	import '../scripts/wm.ts';
+
 	const clock = document.getElementById('clock');
 
 	function tick() {
