@@ -20,8 +20,12 @@ import Pdf from '../components/Pdf.astro';
 			</span>
 		</div>
 
-		<!-- Desktop -->
-		<div id="desktop" class="relative flex-1 overflow-hidden">
+		<!--
+			Desktop. The wallpaper and the stage sit outside #desktop because
+			#desktop is the scroller: anything inside it scrolls away, and both
+			of these describe the visible area rather than the content.
+		-->
+		<div class="relative flex-1 overflow-hidden">
 			<img
 				src="/wallpaper.png"
 				alt="Wallpaper of a gradient"
@@ -39,27 +43,33 @@ import Pdf from '../components/Pdf.astro';
 			>
 			</div>
 
-			<!-- Height is sized to the sidesfetch banner: enough that it never scrolls. -->
-			<Window title="jake@jasi:~" x={194} y={16} width={858} height={176}>
-				<Terminal />
-			</Window>
-			<Window
-				title="blog-ten-eosin-jm9h92qif3.vercel.app"
-				x={194}
-				y={207}
-				width={370}
-				height={454}
-				focused
-			>
-				<Browser src="https://blog-ten-eosin-jm9h92qif3.vercel.app" title="Jacob Sides' blog" />
-			</Window>
 			<!--
-				Fills the column right of the blog, ending flush with the terminal
-				above it: 564 (blog's right edge) + the 15px gutter, out to 1052.
+				Windows keep the positions they were given. A viewport too small
+				to hold them scrolls instead of shoving them around.
 			-->
-			<Window title="resume-jacob-sides.pdf" x={579} y={207} width={473} height={454}>
-				<Pdf src="/resume-jacob-sides.pdf" title="Jacob Sides' resume" />
-			</Window>
+			<div id="desktop" class="absolute inset-0 overflow-auto">
+				<!-- Height is sized to the sidesfetch banner: enough that it never scrolls. -->
+				<Window title="jake@jasi:~" x={194} y={16} width={858} height={176}>
+					<Terminal />
+				</Window>
+				<Window
+					title="blog-ten-eosin-jm9h92qif3.vercel.app"
+					x={194}
+					y={207}
+					width={370}
+					height={454}
+					focused
+				>
+					<Browser src="https://blog-ten-eosin-jm9h92qif3.vercel.app" title="Jacob Sides' blog" />
+				</Window>
+				<!--
+					Fills the column right of the blog, ending flush with the terminal
+					above it: 564 (blog's right edge) + the 15px gutter, out to 1052.
+				-->
+				<Window title="resume-jacob-sides.pdf" x={579} y={207} width={473} height={454}>
+					<Pdf src="/resume-jacob-sides.pdf" title="Jacob Sides' resume" />
+				</Window>
+			</div>
 		</div>
 	</main>
 </Layout>

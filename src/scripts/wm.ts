@@ -3,6 +3,10 @@
  * groupbar, resize from the right/bottom/corner edges, and — in touch mode —
  * tap-to-maximize into #stage, an invisible gutter-inset container. Windows
  * are absolutely positioned inside #desktop and moved with a transform.
+ *
+ * Positions are only ever floored at the origin, never capped: a window that
+ * runs past the viewport extends #desktop's scrollable area instead of being
+ * pushed back inside it.
  */
 
 import { getMode, onModeChange } from './mode';
@@ -35,8 +39,6 @@ const TAP_SLOP = 4;
 /** Keep in sync with the transition in global.css. */
 const SNAP_MS = 160;
 
-const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), Math.max(min, max));
-
 function place(win: HTMLElement, x: number, y: number) {
 	win.dataset.x = String(x);
 	win.dataset.y = String(y);
@@ -59,16 +61,20 @@ function geometryOf(win: HTMLElement): Geometry {
 }
 
 function initDesktop(desktop: HTMLElement) {
-	const stage = desktop.querySelector<HTMLElement>('#stage');
+	const stage = document.getElementById('stage');
 	const windows = () => [...desktop.querySelectorAll<HTMLElement>('[data-window]')];
 
-	/** The area a maximized window fills: the invisible stage, gutters included. */
+	/**
+	 * The area a maximized window fills: the invisible stage, gutters included.
+	 * The stage tracks the viewport, so its position is folded back into the
+	 * scrolled content — a window maximizes over whatever you are looking at.
+	 */
 	function stageGeometry(): Geometry {
 		const box = (stage ?? desktop).getBoundingClientRect();
 		const origin = desktop.getBoundingClientRect();
 		return {
-			x: Math.round(box.left - origin.left),
-			y: Math.round(box.top - origin.top),
+			x: Math.round(box.left - origin.left + desktop.scrollLeft),
+			y: Math.round(box.top - origin.top + desktop.scrollTop),
 			w: Math.round(box.width),
 			h: Math.round(box.height),
 		};
@@ -164,19 +170,15 @@ function initDesktop(desktop: HTMLElement) {
 		const { win, mode } = drag;
 
 		if (mode === 'move') {
-			place(
-				win,
-				clamp(drag.originX + dx, 0, desktop.clientWidth - win.offsetWidth),
-				clamp(drag.originY + dy, 0, desktop.clientHeight - win.offsetHeight),
-			);
+			place(win, Math.max(0, drag.originX + dx), Math.max(0, drag.originY + dy));
 			return;
 		}
 
 		if (mode === 'e' || mode === 'se') {
-			win.style.width = `${clamp(drag.originW + dx, MIN_WIDTH, desktop.clientWidth - drag.originX)}px`;
+			win.style.width = `${Math.max(MIN_WIDTH, drag.originW + dx)}px`;
 		}
 		if (mode === 's' || mode === 'se') {
-			win.style.height = `${clamp(drag.originH + dy, MIN_HEIGHT, desktop.clientHeight - drag.originY)}px`;
+			win.style.height = `${Math.max(MIN_HEIGHT, drag.originH + dy)}px`;
 		}
 	});
 
@@ -202,22 +204,14 @@ function initDesktop(desktop: HTMLElement) {
 		for (const win of windows()) unmaximize(win);
 	});
 
-	// Refit the stage and keep windows on screen, at startup and on resize.
+	// Refit maximized windows to the resized stage. Floating windows are left
+	// exactly where they are — a smaller viewport just means more to scroll.
 	function reflow() {
 		for (const win of windows()) {
-			if (win.dataset.maximized) {
-				apply(win, stageGeometry());
-				continue;
-			}
-			place(
-				win,
-				clamp(Number(win.dataset.x ?? 0), 0, desktop.clientWidth - win.offsetWidth),
-				clamp(Number(win.dataset.y ?? 0), 0, desktop.clientHeight - win.offsetHeight),
-			);
+			if (win.dataset.maximized) apply(win, stageGeometry());
 		}
 	}
 
-	reflow();
 	window.addEventListener('resize', reflow);
 }
 

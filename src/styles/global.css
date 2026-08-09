@@ -36,6 +36,44 @@
 	cursor: grabbing;
 }
 
+/*
+ * Desktop scrollbar: a translucent thumb floating on the wallpaper, no track
+ * and no buttons. The transparent border plus background-clip is what insets
+ * the thumb, since ::-webkit-scrollbar-thumb ignores padding.
+ */
+#desktop {
+	overscroll-behavior: contain;
+}
+
+#desktop::-webkit-scrollbar {
+	width: 11px;
+	height: 11px;
+}
+
+#desktop::-webkit-scrollbar-track,
+#desktop::-webkit-scrollbar-corner {
+	background: transparent;
+}
+
+#desktop::-webkit-scrollbar-thumb {
+	border: 3px solid transparent;
+	border-radius: 9999px;
+	background-color: color-mix(in srgb, var(--color-fg) 28%, transparent);
+	background-clip: content-box;
+}
+
+#desktop::-webkit-scrollbar-thumb:hover {
+	background-color: color-mix(in srgb, var(--color-fg) 55%, transparent);
+}
+
+/* Firefox has no ::-webkit-scrollbar; give it the nearest standard equivalent. */
+@supports not selector(::-webkit-scrollbar) {
+	#desktop {
+		scrollbar-width: thin;
+		scrollbar-color: color-mix(in srgb, var(--color-fg) 28%, transparent) transparent;
+	}
+}
+
 /* Maximize/restore animation. Kept off during drags — see SNAP_MS in wm.ts. */
 [data-window][data-snapping] {
 	transition:
