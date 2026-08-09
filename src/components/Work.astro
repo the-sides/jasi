@@ -1,0 +1,111 @@
+---
+/**
+ * The work: one window per project, dealt out in a cascade running from the top
+ * right down to the bottom left — the way a pile of windows looks before anyone
+ * tidies it up. Every step down clears the groupbar and label band of the
+ * window behind it, so each title in the pile stays readable.
+ *
+ * Source order is stacking order — wm.ts hands out z-index in document order —
+ * so the pile runs oldest at the back to newest at the front, and clicking a
+ * window buried in it raises it, the same as any other window here.
+ */
+import Window from './Window.astro';
+import Shot from './Shot.astro';
+
+interface Props {
+	/**
+	 * Where the cascade starts, in layout boxes. Anything past 1 is the
+	 * screenful after the one the desktop opens on.
+	 */
+	y?: number;
+}
+
+const { y: TOP = 1.02 } = Astro.props;
+
+interface Project {
+	slug: string;
+	name: string;
+	blurb: string;
+	note?: string;
+}
+
+const PROJECTS: Project[] = [
+	{
+		slug: 'trimech',
+		name: 'TriMech',
+		blurb: 'Engineering solutions — hardware, software, training and staffing',
+		note: 'Pyxl',
+	},
+	{
+		slug: 'mlily',
+		name: 'MLILY',
+		blurb: 'Sleep brand storefront — mattresses, pillows and adjustable bases',
+		note: 'Pyxl',
+	},
+	{
+		slug: 'brownlee',
+		name: 'Brownlee',
+		blurb: 'Fashion storefront built around seasonal editorial drops',
+		note: 'Pyxl · 2022 W3 Gold',
+	},
+	{
+		slug: 'akima',
+		name: 'Akima',
+		blurb: 'Global enterprise powering critical work across the federal government',
+		note: 'Pyxl',
+	},
+	{
+		slug: 'opseyes',
+		name: 'Opseyes',
+		blurb: 'Wastewater testing service — lab results back in under ten minutes',
+		note: 'Pyxl',
+	},
+	{
+		slug: 'razorsync',
+		name: 'RazorSync',
+		blurb: 'Field service management software, from features through booking a demo',
+		note: 'Pyxl',
+	},
+	{
+		slug: 'mergerai',
+		name: 'MergerAI',
+		blurb: 'AI workspace for M&A diligence and CIM production',
+		note: 'founding developer',
+	},
+];
+
+const W = 0.5;
+const H = 0.46;
+
+/**
+ * A step has to clear the window behind it: 22px of groupbar, its 5px gap and
+ * the label band under that, so about 50px. The layout box is never shorter
+ * than 480px (global.css), and a tenth of the shortest one still clears it.
+ */
+const STEP_Y = 0.1;
+
+/** First window flush with the right edge of the layout box, last with the left. */
+const STEP_X = (1 - W) / (PROJECTS.length - 1);
+
+/** Fractions are written into CSS custom properties; keep them short. */
+const round = (n: number) => Math.round(n * 1e4) / 1e4;
+---
+
+{
+	PROJECTS.map((project, i) => (
+		<Window
+			title={`work/${project.slug}.webp`}
+			x={round(1 - W - i * STEP_X)}
+			y={round(TOP + i * STEP_Y)}
+			w={W}
+			h={H}
+		>
+			<Shot
+				src={`/work/${project.slug}.webp`}
+				name={project.name}
+				blurb={project.blurb}
+				note={project.note}
+			/>
+		</Window>
+	))
+}
