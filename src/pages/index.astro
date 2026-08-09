@@ -71,6 +71,16 @@ import Work from '../components/Work.astro';
 
 				<Work />
 			</div>
+
+			<!--
+				Chrome for windows the shell opens (see spawn.ts). Keeping it here as
+				an empty Window rather than as markup in a script is what stops a
+				spawned window from drifting away from the ones the page ships with:
+				there is still only one description of what a window is.
+			-->
+			<template id="window-template">
+				<Window />
+			</template>
 		</div>
 	</main>
 </Layout>

@@ -1,8 +1,13 @@
 ---
 /**
- * A static shell transcript: one command and the banner it printed. Colours
- * come from the Catppuccin Mocha ANSI set in global.css, so the window reads
- * as the Omarchy terminal it is imitating.
+ * A shell transcript: one command and the banner it printed. Colours come from
+ * the Catppuccin Mocha ANSI set in global.css, so the window reads as the
+ * Omarchy terminal it is imitating.
+ *
+ * A transcript that ends on a prompt ends on a working one: it takes commands
+ * (see commands.ts). Nothing is ever printed back — a command here is a
+ * shortcut that acts on the desktop, so the transcript above it stays exactly
+ * as it was.
  */
 interface Props {
 	user?: string;
@@ -14,7 +19,7 @@ interface Props {
 	art?: string;
 	/** What a screen reader is given in place of the banner. */
 	label?: string;
-	/** Whether the transcript ends on a live prompt. */
+	/** Whether the transcript ends on a live prompt — one that takes commands. */
 	cursor?: boolean;
 }
 
@@ -66,15 +71,67 @@ const COLUMNS = `calc(100cqi / ${Math.round(cols * 0.5859375 * 1e3) / 1e3})`;
 			aria-label={label}
 			class:list={['mt-[1.25em] leading-none text-term-magenta', cursor && 'mb-[1.25em]']}>{art}</pre>
 
-		{/* A transcript that ends on a live prompt reads as a session still open. */}
+		{/*
+			A transcript that ends on a live prompt reads as a session still open —
+			and this one is open: the input is invisible and laid over the line, and
+			what is typed is echoed beside the block cursor, so the caret stays the
+			terminal's own rather than the browser's. 16px on the input is only there
+			to stop iOS zooming in on focus; none of its text is ever seen.
+		*/}
 		{
 			cursor && (
-				<p>
+				<p data-term-line class="relative">
 					<span class="text-term-green">{user}@{host}</span><span>:</span><span class="text-term-blue"
 						>{cwd}</span
-					><span>$ </span><span data-term-cursor aria-hidden="true">█</span>
+					><span>$ </span><span data-term-echo /><span data-term-cursor aria-hidden="true">█</span>
+					<input
+						data-term-input
+						type="text"
+						aria-label="Command"
+						autocomplete="off"
+						autocapitalize="off"
+						autocorrect="off"
+						spellcheck="false"
+						class="absolute inset-0 w-full bg-transparent text-[16px] opacity-0 outline-none"
+					/>
 				</p>
 			)
 		}
 	</div>
 </div>
+
+<script>
+	import { run } from '../scripts/commands';
+
+	for (const line of document.querySelectorAll<HTMLElement>('[data-term-line]')) {
+		const input = line.querySelector<HTMLInputElement>('[data-term-input]');
+		const echo = line.querySelector<HTMLElement>('[data-term-echo]');
+		if (!input || !echo) continue;
+
+		input.addEventListener('input', () => {
+			echo.textContent = input.value;
+		});
+
+		input.addEventListener('keydown', (e) => {
+			if (e.key !== 'Enter') return;
+			run(input.value);
+			input.value = '';
+			echo.textContent = '';
+		});
+
+		// The cursor blinks while the line is taking input, and sits still when it
+		// is not — the same tell an unfocused terminal gives.
+		input.addEventListener('focus', () => (line.dataset.active = 'true'));
+		input.addEventListener('blur', () => delete line.dataset.active);
+
+		// Anywhere in the window is the prompt: a click on the window's shield or
+		// its banner puts the caret back on the line, the way clicking a terminal
+		// does. Not on a touch pointer, where that would throw up the keyboard on
+		// a tap meant to maximize the window.
+		const win = line.closest<HTMLElement>('[data-window]');
+		const coarse = window.matchMedia('(pointer: coarse)');
+		win?.addEventListener('click', () => {
+			if (!coarse.matches) input.focus();
+		});
+	}
+</script>
