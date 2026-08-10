@@ -3,9 +3,33 @@ import '../styles/global.css';
 
 interface Props {
 	title?: string;
+	description?: string;
 }
 
-const { title = 'jasi' } = Astro.props;
+const {
+	title = 'Jacob Sides - Web Engineer',
+	description = 'Jacob Sides is a senior web engineer with 8+ years across agency, startup, and enterprise teams — frontend-first, with AWS depth. TypeScript, React, Next.js, and AWS.',
+} = Astro.props;
+
+/*
+ * Astro.site comes from the `site` in astro.config.mjs. Canonical and og:*
+ * URLs have to be absolute, so everything below is resolved against it.
+ */
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = new URL('/og.png', Astro.site);
+const person = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: 'Jacob Sides',
+	url: Astro.site?.href,
+	image: og.href,
+	jobTitle: 'Senior Web Engineer',
+	email: 'jacob.r.sides@gmail.com',
+	description,
+	knowsAbout: ['TypeScript', 'React', 'Next.js', 'Astro', 'Node.js', 'AWS', 'Figma'],
+	worksFor: { '@type': 'Organization', name: 'MergerAI' },
+	sameAs: ['https://github.com/the-sides', 'https://www.linkedin.com/in/jacob-sides'],
+};
 ---
 
 <!doctype html>
@@ -14,7 +38,43 @@ const { title = 'jasi' } = Astro.props;
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
+
 		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta name="author" content="Jacob Sides" />
+		<link rel="canonical" href={canonical} />
+		<meta name="robots" content="index, follow" />
+
+		<!-- The page is a desktop mock-up: it is dark whether or not the OS is. -->
+		<meta name="theme-color" content="#11111b" />
+		<meta name="color-scheme" content="dark" />
+
+		<!--
+			SVG first for browsers that take it, .ico as the fallback every
+			crawler and older browser knows to ask for.
+		-->
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="/favicon.ico" sizes="32x32" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Jacob Sides" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={og} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="Jacob Sides — Web Engineer" />
+		<meta property="og:locale" content="en_US" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={og} />
+		<meta name="twitter:image:alt" content="Jacob Sides — Web Engineer" />
+
+		<script type="application/ld+json" set:html={JSON.stringify(person)} is:inline />
 	</head>
 	<body class="h-full overflow-hidden bg-neutral-900">
 		<slot />
