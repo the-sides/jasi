@@ -18,10 +18,16 @@ interface Props {
 	y?: number;
 	w?: number;
 	h?: number;
+	/**
+	 * Where the window sits in the stack narrow screens fall back to, for the
+	 * rare window whose place there is not its place in the pile. Everything
+	 * left at 0 stacks in source order, so this is only worth setting in groups.
+	 */
+	order?: number;
 	focused?: boolean;
 }
 
-const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.props;
+const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, order = 0, focused = false } = Astro.props;
 ---
 
 <!--
@@ -32,7 +38,7 @@ const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, focused = false } = Astro.pr
 <section
 	data-window
 	data-focused={focused ? 'true' : undefined}
-	style={`--fx: ${x}; --fy: ${y}; --fw: ${w}; --fh: ${h};`}
+	style={`--fx: ${x}; --fy: ${y}; --fw: ${w}; --fh: ${h}; --order: ${order};`}
 	class="group absolute top-0 left-0 flex flex-col gap-gap-in"
 >
 	<header

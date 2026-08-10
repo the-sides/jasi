@@ -100,7 +100,9 @@
 }
 
 /*
- * Narrow screens: one column, in source order. There is no room for an
+ * Narrow screens: one column, in source order — except where a window asks for
+ * a place of its own with --order, which source order cannot give it because
+ * source order is also the stacking order of the pile. There is no room for an
  * arrangement here and nothing to drag with, so the windows stack and the
  * desktop scrolls — wm.ts drops its inline geometry at this width so these
  * rules are the only thing placing them.
@@ -116,6 +118,7 @@
 	[data-window] {
 		position: relative;
 		flex: none;
+		order: var(--order, 0);
 		width: 100%;
 		transform: none;
 	}
