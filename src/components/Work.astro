@@ -5,14 +5,31 @@
  * pile of windows looks before anyone tidies it up. Every step down clears the
  * groupbar of the window behind it, so each title in the pile stays readable.
  *
+ * The project being worked on now is not in that pile. It sits out to the
+ * right, wider than the rest and open rather than dealt into the stack — the
+ * window someone left up and is still using. It is what a cascade of finished
+ * work is the background to, so it is allowed to cover the tail of it.
+ *
  * Source order is stacking order — wm.ts hands out z-index in document order —
  * so the pile runs oldest at the back to newest at the front, and clicking a
- * window buried in it raises it, the same as any other window here. It is also
- * the order the windows stack in on a phone, which is why the banner is first.
+ * window buried in it raises it, the same as any other window here. That puts
+ * the current project last, on top of everything. On a phone the stack is the
+ * layout and there is no on top, so the windows carry an explicit order there
+ * instead: banner, current project, then the pile.
  */
 import Window from './Window.astro';
 import Shot from './Shot.astro';
 import Terminal from './Terminal.astro';
+
+/**
+ * Every shot, keyed by the path it was imported from — the one way to hand
+ * astro:assets a file chosen at runtime, since it needs the imports at build
+ * time to know what to build. SHOT() turns a slug back into one.
+ */
+const SHOTS = import.meta.glob<{ default: ImageMetadata }>('../assets/work/*.webp', {
+	eager: true,
+});
+const SHOT = (slug: string) => SHOTS[`../assets/work/${slug}.webp`].default;
 
 interface Props {
 	/**
@@ -76,6 +93,10 @@ const PROJECTS: Project[] = [
 	},
 ];
 
+/** The project the cascade is the backdrop to; the rest of the list is the pile. */
+const CURRENT = 'mergerai';
+const CASCADE = PROJECTS.filter((project) => project.slug !== CURRENT);
+
 const W = 0.5;
 const H = 0.46;
 
@@ -88,7 +109,18 @@ const H = 0.46;
 const STEP_Y = 0.1;
 
 /** First window flush with the right edge of the layout box, last with the left. */
-const STEP_X = (1 - W) / (PROJECTS.length - 1);
+const STEP_X = (1 - W) / (CASCADE.length - 1);
+
+/**
+ * The current project, held open: half again as wide as a window in the pile
+ * and flush with the right edge, starting below the banner and far enough down
+ * the cascade that the pile reads as a pile before this lands on top of it. The
+ * windows it covers are the ones furthest down and left, and it takes only
+ * their blurbs — every name in the pile is still there to the left of it.
+ */
+const HERO_W = 0.58;
+const HERO_H = 0.48;
+const HERO_Y = 0.26;
 
 /** Fractions are written into CSS custom properties; keep them short. */
 const round = (n: number) => Math.round(n * 1e4) / 1e4;
@@ -116,15 +148,46 @@ const WORK = String.raw`
 const GAP_X = 0.013; // the same sliver the blog and the resume are parted by
 const BANNER_W = round(1 - W - STEP_X - GAP_X);
 const BANNER_H = 0.21;
+
+/** Where each window goes in the phone's stack. Everything else there is a 0. */
+const ORDER = { banner: 1, hero: 2, cascade: 3 };
+
+/** The frame a project is shown in: out on its own, or its turn in the pile. */
+function frame(project: Project) {
+	if (project.slug === CURRENT) {
+		return {
+			x: round(1 - HERO_W),
+			y: round(TOP + HERO_Y),
+			w: HERO_W,
+			h: HERO_H,
+			order: ORDER.hero,
+		};
+	}
+	const i = CASCADE.indexOf(project);
+	return {
+		x: round(1 - W - i * STEP_X),
+		y: round(TOP + i * STEP_Y),
+		w: W,
+		h: H,
+		order: ORDER.cascade,
+	};
+}
 ---
 
-<Window title="jake@jasi:~/work" x={0} y={round(TOP)} w={BANNER_W} h={BANNER_H}>
+<Window
+	title="jake@jasi:~/work"
+	x={0}
+	y={round(TOP)}
+	w={BANNER_W}
+	h={BANNER_H}
+	order={ORDER.banner}
+>
 	<Terminal cwd="~/work" command="ls" art={WORK} label="Work" cursor={false} />
 </Window>
 
 {
-	PROJECTS.map((project, i) => (
-		<Window x={round(1 - W - i * STEP_X)} y={round(TOP + i * STEP_Y)} w={W} h={H}>
+	PROJECTS.map((project) => (
+		<Window {...frame(project)}>
 			{/*
 				The groupbar is the label: a cascade only leaves the top strip of
 				each window showing, so the strip has to say what the window is.
@@ -140,7 +203,7 @@ const BANNER_H = 0.21;
 				{project.note && <span class="shrink-0 text-accent">{project.note}</span>}
 			</div>
 
-			<Shot src={`/work/${project.slug}.webp`} name={project.name} />
+			<Shot src={SHOT(project.slug)} name={project.name} />
 		</Window>
 	))
 }

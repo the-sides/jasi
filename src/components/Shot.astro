@@ -3,13 +3,27 @@
  * A site screenshot filling a window. What you are looking at is named by the
  * window's groupbar, not by anything drawn over the image: a cascade only
  * leaves the top strip of each window showing, so the strip is the label.
+ *
+ * The image is an import rather than a path under public/, so astro:assets
+ * builds the sizes below at compile time and the browser fetches whichever of
+ * them fits — a window is a fraction of the screen, never the full 1600px.
  */
+import { Image } from 'astro:assets';
+
 interface Props {
-	src: string;
+	src: ImageMetadata;
 	name: string;
 }
 
 const { src, name } = Astro.props;
+
+/**
+ * A shot is at most the hero window wide — 0.58 of a layout box that is itself
+ * 90vw — and the full column on a phone. The rungs are spaced to cover both,
+ * doubling from the narrowest phone to the source image.
+ */
+const WIDTHS = [400, 800, 1200, 1600];
+const SIZES = '(max-width: 767px) 90vw, 55vw';
 ---
 
 <!--
@@ -19,11 +33,11 @@ const { src, name } = Astro.props;
 	stacked one. The corner the page starts in — logo, nav, headline — is the
 	part that identifies it, so that is the corner that is kept.
 -->
-<img
+<Image
 	src={src}
 	alt={`Screenshot of the ${name} website`}
-	width="1600"
-	height="1041"
+	widths={WIDTHS}
+	sizes={SIZES}
 	loading="lazy"
 	decoding="async"
 	class="h-full w-full bg-term-bg object-cover object-left-top"
