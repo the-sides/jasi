@@ -21,6 +21,16 @@ import Window from './Window.astro';
 import Shot from './Shot.astro';
 import Terminal from './Terminal.astro';
 
+/**
+ * Every shot, keyed by the path it was imported from — the one way to hand
+ * astro:assets a file chosen at runtime, since it needs the imports at build
+ * time to know what to build. SHOT() turns a slug back into one.
+ */
+const SHOTS = import.meta.glob<{ default: ImageMetadata }>('../assets/work/*.webp', {
+	eager: true,
+});
+const SHOT = (slug: string) => SHOTS[`../assets/work/${slug}.webp`].default;
+
 interface Props {
 	/**
 	 * Where the cascade starts, in layout boxes. Anything past 1 is the
@@ -193,7 +203,7 @@ function frame(project: Project) {
 				{project.note && <span class="shrink-0 text-accent">{project.note}</span>}
 			</div>
 
-			<Shot src={`/work/${project.slug}.webp`} name={project.name} />
+			<Shot src={SHOT(project.slug)} name={project.name} />
 		</Window>
 	))
 }

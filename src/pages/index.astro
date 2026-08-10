@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../layouts/Layout.astro';
 import Window from '../components/Window.astro';
 import ModeToggle from '../components/ModeToggle.astro';
@@ -6,6 +7,7 @@ import Terminal from '../components/Terminal.astro';
 import Browser from '../components/Browser.astro';
 import Pdf from '../components/Pdf.astro';
 import Work from '../components/Work.astro';
+import wallpaper from '../assets/wallpaper.png';
 ---
 
 <Layout>
@@ -27,9 +29,22 @@ import Work from '../components/Work.astro';
 			of these describe the visible area rather than the content.
 		-->
 		<div id="screen" class="relative flex-1 overflow-hidden [container-type:size]">
-			<img
-				src="/wallpaper.png"
+			<!--
+				The one image on the page that is not lazy: it is the whole
+				background, so it is already on screen. astro:assets rewrites the
+				2MB source into the widths below, which is most of what the page
+				weighs. The width caps the plain src a browser falls back to —
+				left off, that is the source's own 4658px, and the largest file
+				here by an order of magnitude.
+			-->
+			<Image
+				src={wallpaper}
 				alt="Wallpaper of a gradient"
+				width={1920}
+				widths={[768, 1280, 1920, 2560]}
+				sizes="100vw"
+				loading="eager"
+				fetchpriority="high"
 				class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
 			/>
 
