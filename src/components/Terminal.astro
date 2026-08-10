@@ -10,6 +10,7 @@
  * as it was.
  */
 import { Image } from 'astro:assets';
+import Social from './Social.astro';
 import portrait from '../assets/portrait.png';
 
 interface Props {
@@ -24,6 +25,8 @@ interface Props {
 	label?: string;
 	/** Whether the banner is signed off with the face it names. */
 	photo?: boolean;
+	/** Whether the signature carries the links to the rest of him. */
+	links?: boolean;
 	/** Whether the transcript ends on a live prompt — one that takes commands. */
 	cursor?: boolean;
 }
@@ -47,6 +50,7 @@ const {
 	art = SIDES,
 	label = 'Jacob Sides',
 	photo = true,
+	links = true,
 	cursor = true,
 } = Astro.props;
 
@@ -57,10 +61,18 @@ const LINES = art.split('\n');
 // tall, and standing the photo in that gives a width from its own proportions.
 // A column of space keeps the two apart. Below the total the cell shrinks to
 // keep the row whole, rather than handing the user a scrollbar.
+//
+// The links stand beside the photo in the same way: the pair is exactly as tall
+// as the banner, and each mark is square, so half that height less the blank
+// line between them is also the width the column adds.
 const cols = Math.max(...LINES.map((line) => [...line].length));
 const GAP = 1;
+const ICON_GAP = 0.5;
+const ICON = (LINES.length - ICON_GAP) / 2;
 const WIDTH =
-	cols * 0.5859375 + (photo ? GAP + LINES.length * (portrait.width / portrait.height) : 0);
+	cols * 0.5859375 +
+	(photo ? GAP + LINES.length * (portrait.width / portrait.height) : 0) +
+	(links ? GAP + ICON : 0);
 const COLUMNS = `calc(100cqi / ${Math.round(WIDTH * 1e3) / 1e3})`;
 ---
 
@@ -84,7 +96,11 @@ const COLUMNS = `calc(100cqi / ${Math.round(WIDTH * 1e3) / 1e3})`;
 		    the banner's own height and left to find its width, so the two read as
 		    one line of output however far the cell has shrunk. Dithered to twelve
 		    colours before it got here, so it is a few kilobytes and belongs to the
-		    same palette the banner is printed in. */}
+		    same palette the banner is printed in.
+
+		    The links come after the face, set in the banner's colour and drawn the
+		    same way it is, so the row ends the way a signature block does: the
+		    name, the face, and where to find him. */}
 		<div class:list={['mt-[1.25em] flex items-start gap-[1em]', cursor && 'mb-[1.25em]']}>
 			<pre role="img" aria-label={label} class="leading-none text-term-magenta">{art}</pre>
 			{
@@ -99,6 +115,7 @@ const COLUMNS = `calc(100cqi / ${Math.round(WIDTH * 1e3) / 1e3})`;
 					/>
 				)
 			}
+			{links && <Social size={ICON} gap={ICON_GAP} />}
 		</div>
 
 		{/*
