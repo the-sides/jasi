@@ -1,0 +1,150 @@
+---
+/**
+ * The two places to find him, drawn the way his name is.
+ *
+ * Each mark is a grid of cells — filled here, empty there — set solid and then
+ * bevelled the way figlet's ANSI Shadow bevels a letter: the same shape again a
+ * cell down and to the right, with only the part the mark does not already
+ * cover left showing, and that part drawn as the box-drawing lines figlet would
+ * have printed it with. So these read as more output from the same program as
+ * the banner beside them rather than as logos dropped into a terminal.
+ *
+ * The pair stacks, square, in the height of the banner — see the sizing in
+ * Terminal.astro, which is also what has to know how wide they come out.
+ */
+
+/** A filled cell. Anything else is empty. */
+const ON = '█';
+
+// Octocat: ears, eyes, and the two legs it stands on.
+const GITHUB = String.raw`
+·██········██·
+·███······███·
+·████····████·
+·████████████·
+██████████████
+███··████··███
+███··████··███
+██████████████
+██████████████
+·████████████·
+··██████████··
+··███····███··
+··███····███··
+···██····██···
+`;
+
+// The badge, with "in" cut out of it.
+const LINKEDIN = String.raw`
+·████████████·
+██████████████
+██████████████
+██··██████████
+██··██████████
+██████████████
+██··█·······██
+██··█·······██
+██··█··███··██
+██··█··███··██
+██··█··███··██
+██··█··███··██
+██████████████
+·████████████·
+`;
+
+/** How heavy a bevel line is, in cells. A box-drawing glyph is thinner than
+ * this; at the size these are printed, thinner than this is not there at all. */
+const STROKE = 0.3;
+
+const DIRS = [
+	[1, 0],
+	[-1, 0],
+	[0, 1],
+	[0, -1],
+] as const;
+
+/** Coordinates are written straight into the path; keep them short. */
+const round = (n: number) => Math.round(n * 1e3) / 1e3;
+
+/**
+ * Turn a grid into the two paths it is drawn with: the cells themselves, and
+ * the bevel behind them. Cells are one unit square, so the viewBox is the grid
+ * plus the one cell the bevel hangs off the bottom and the right.
+ */
+function mark(art: string) {
+	const lines = art.replace(/^\n|\n$/g, '').split('\n');
+	const rows = lines.length;
+	const cols = Math.max(...lines.map((line) => line.length));
+
+	const on = (r: number, c: number) => lines[r]?.[c] === ON;
+	const bevelled = (r: number, c: number) => !on(r, c) && on(r - 1, c - 1);
+
+	const fill: string[] = [];
+	const bevel: string[] = [];
+
+	for (let r = 0; r <= rows; r++) {
+		for (let c = 0; c <= cols; c++) {
+			if (on(r, c)) fill.push(`M${c} ${r}h1v1h-1z`);
+			if (!bevelled(r, c)) continue;
+
+			// A bevel cell is a length of line from its centre out to each side
+			// the bevel carries on through — half a cell each, so two cells in a
+			// row make one unbroken line and a turn makes a corner. Each starts
+			// half a stroke back from the centre, or a corner would be notched.
+			const [x, y] = [c + 0.5, r + 0.5];
+			const run = DIRS.filter(([dc, dr]) => bevelled(r + dr, c + dc));
+			for (const [dc, dr] of run) {
+				const back = (STROKE / 2) * -1;
+				bevel.push(
+					`M${round(x + dc * back)} ${round(y + dr * back)}L${x + dc / 2} ${y + dr / 2}`
+				);
+			}
+			// A cell the bevel neither enters nor leaves is a lone tick.
+			if (!run.length) bevel.push(`M${x - 0.25} ${y}h0.5`);
+		}
+	}
+
+	return { fill: fill.join(''), bevel: bevel.join(''), box: `0 0 ${cols + 1} ${rows + 1}` };
+}
+
+interface Props {
+	/** How tall each mark is printed, in em — they are square, so also how wide. */
+	size?: number;
+	/** The blank line between them, in em. */
+	gap?: number;
+}
+
+const { size = 2.75, gap = 0.5 } = Astro.props;
+
+const LINKS = [
+	{ name: 'GitHub', href: 'https://github.com/the-sides', art: GITHUB },
+	{ name: 'LinkedIn', href: 'https://www.linkedin.com/in/jacob-sides', art: LINKEDIN },
+].map((link) => ({ ...link, ...mark(link.art) }));
+---
+
+<ul class="flex shrink-0 flex-col" style={`gap: ${gap}em`}>
+	{
+		LINKS.map((link) => (
+			<li>
+				<a
+					href={link.href}
+					target="_blank"
+					rel="me noreferrer"
+					aria-label={link.name}
+					title={link.name}
+					class="block text-term-magenta transition-colors hover:text-term-fg focus-visible:text-term-fg"
+				>
+					<svg
+						viewBox={link.box}
+						aria-hidden="true"
+						class="block"
+						style={`height: ${size}em; width: ${size}em`}
+					>
+						<path d={link.bevel} fill="none" stroke="currentColor" stroke-width={STROKE} />
+						<path d={link.fill} fill="currentColor" />
+					</svg>
+				</a>
+			</li>
+		))
+	}
+</ul>
