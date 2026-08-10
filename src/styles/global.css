@@ -79,9 +79,13 @@
 
 /* Mirrors getMode() in mode.ts: anything but desktop is touch. */
 /* The min-width is the other side of STACK_QUERY in wm.ts: the stack has no
- * stage to maximize into, so there focus is all a window can wait for. */
+ * stage to maximize into, so there focus is all a window can wait for. And a
+ * window that never goes up on the stage has nothing else to wait for either,
+ * so it takes the desktop bargain: the shield comes down on focus. */
 @media (min-width: 768px) {
-	html:not([data-mode='desktop']) [data-window]:not([data-maximized]) [data-shield] {
+	html:not([data-mode='desktop'])
+		[data-window]:not([data-maximized]):not([data-no-maximize])
+		[data-shield] {
 		display: block;
 	}
 }

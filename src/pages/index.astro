@@ -67,7 +67,13 @@ import wallpaper from '../assets/wallpaper.png';
 				screenful the desktop scrolls down to.
 			-->
 			<div id="desktop" class="absolute inset-0 overflow-auto">
-				<Window title="jake@jasi:~" x={0} y={0} w={1} h={0.26}>
+				{/*
+					The one window here that is a place to do something rather than
+					something to look at: it takes typing, and the banner it printed
+					is signed with links. A tap in it belongs to what is inside the
+					frame, so it stays where it is instead of going up on the stage.
+				*/}
+				<Window title="jake@jasi:~" x={0} y={0} w={1} h={0.26} maximize={false}>
 					<Terminal />
 				</Window>
 				<Window

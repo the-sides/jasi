@@ -2,6 +2,10 @@
 /**
  * The two places to find him, drawn the way his name is.
  *
+ * data-no-drag keeps the press away from the window manager, the same as the
+ * download link in the resume's groupbar: a link is a link, and the rest of the
+ * window is still a handle to move it by.
+ *
  * Each mark is a grid of cells — filled here, empty there — set solid and then
  * bevelled the way figlet's ANSI Shadow bevels a letter: the same shape again a
  * cell down and to the right, with only the part the mark does not already
@@ -134,6 +138,7 @@ const LINKS = [
 					href={link.href}
 					target="_blank"
 					rel="me noreferrer"
+					data-no-drag
 					aria-label={link.name}
 					title={link.name}
 					class="block text-term-magenta transition-colors hover:text-term-fg focus-visible:text-term-fg"

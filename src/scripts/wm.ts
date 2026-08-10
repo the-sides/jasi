@@ -162,8 +162,13 @@ function initDesktop(desktop: HTMLElement) {
 		if (Number(win.style.zIndex) < top) win.style.zIndex = String(++top);
 	}
 
-	/** A tap toggles the window between the stage and where it came from. */
+	/**
+	 * A tap toggles the window between the stage and where it came from — unless
+	 * the window has opted out of the stage, in which case the tap was only ever
+	 * about raising it and the desktop is left exactly as it was.
+	 */
 	function toggleMaximize(win: HTMLElement) {
+		if (win.dataset.noMaximize) return;
 		for (const other of windows()) {
 			if (other !== win) unmaximize(other);
 		}

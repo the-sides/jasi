@@ -25,9 +25,25 @@ interface Props {
 	 */
 	order?: number;
 	focused?: boolean;
+	/**
+	 * Whether a tap in touch mode puts this window up on the stage. A window
+	 * whose contents are the point of it — one that is taking typing, or holding
+	 * links — says no: there the tap belongs to what is inside the frame, and
+	 * the window settles for being raised, the way it is in desktop mode.
+	 */
+	maximize?: boolean;
 }
 
-const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, order = 0, focused = false } = Astro.props;
+const {
+	title = '',
+	x = 0,
+	y = 0,
+	w = 0.5,
+	h = 0.5,
+	order = 0,
+	focused = false,
+	maximize = true,
+} = Astro.props;
 ---
 
 <!--
@@ -38,6 +54,7 @@ const { title = '', x = 0, y = 0, w = 0.5, h = 0.5, order = 0, focused = false }
 <section
 	data-window
 	data-focused={focused ? 'true' : undefined}
+	data-no-maximize={maximize ? undefined : 'true'}
 	style={`--fx: ${x}; --fy: ${y}; --fw: ${w}; --fh: ${h}; --order: ${order};`}
 	class="group absolute top-0 left-0 flex flex-col gap-gap-in"
 >
