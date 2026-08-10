@@ -9,6 +9,9 @@
  * shortcut that acts on the desktop, so the transcript above it stays exactly
  * as it was.
  */
+import { Image } from 'astro:assets';
+import portrait from '../assets/portrait.png';
+
 interface Props {
 	user?: string;
 	host?: string;
@@ -19,6 +22,8 @@ interface Props {
 	art?: string;
 	/** What a screen reader is given in place of the banner. */
 	label?: string;
+	/** Whether the banner is signed off with the face it names. */
+	photo?: boolean;
 	/** Whether the transcript ends on a live prompt — one that takes commands. */
 	cursor?: boolean;
 }
@@ -41,14 +46,22 @@ const {
 	command = 'sidesfetch',
 	art = SIDES,
 	label = 'Jacob Sides',
+	photo = true,
 	cursor = true,
 } = Astro.props;
 
-// The banner's own width in columns, at CaskaydiaMono's 0.586em advance: the
-// width it needs to render whole. Below that the cell shrinks to keep the
-// banner whole, rather than handing the user a scrollbar.
-const cols = Math.max(...art.split('\n').map((line) => [...line].length));
-const COLUMNS = `calc(100cqi / ${Math.round(cols * 0.5859375 * 1e3) / 1e3})`;
+const LINES = art.split('\n');
+
+// The banner's own width in em, at CaskaydiaMono's 0.586em advance, and the
+// photo's beside it: the banner is set solid, so its block is one em a line
+// tall, and standing the photo in that gives a width from its own proportions.
+// A column of space keeps the two apart. Below the total the cell shrinks to
+// keep the row whole, rather than handing the user a scrollbar.
+const cols = Math.max(...LINES.map((line) => [...line].length));
+const GAP = 1;
+const WIDTH =
+	cols * 0.5859375 + (photo ? GAP + LINES.length * (portrait.width / portrait.height) : 0);
+const COLUMNS = `calc(100cqi / ${Math.round(WIDTH * 1e3) / 1e3})`;
 ---
 
 <div class="h-full w-full overflow-hidden bg-term-bg p-2 [container-type:inline-size]">
@@ -63,13 +76,30 @@ const COLUMNS = `calc(100cqi / ${Math.round(cols * 0.5859375 * 1e3) / 1e3})`;
 		</p>
 
 		{/* The expression hugs the tags: whitespace here would land in the banner.
-		    The margin is in em, so it stays one blank line tall as the cell shrinks.
-		    The blank line below it is the room the next prompt needs — a transcript
-		    that does not end on one has nothing to leave room for. */}
-		<pre
-			role="img"
-			aria-label={label}
-			class:list={['mt-[1.25em] leading-none text-term-magenta', cursor && 'mb-[1.25em]']}>{art}</pre>
+		    The margins are in em, so they stay one blank line tall as the cell
+		    shrinks. The blank line below is the room the next prompt needs — a
+		    transcript that does not end on one has nothing to leave room for.
+
+		    The photo ends the name the way a signature ends a letter: it is set to
+		    the banner's own height and left to find its width, so the two read as
+		    one line of output however far the cell has shrunk. Dithered to twelve
+		    colours before it got here, so it is a few kilobytes and belongs to the
+		    same palette the banner is printed in. */}
+		<div class:list={['mt-[1.25em] flex items-start gap-[1em]', cursor && 'mb-[1.25em]']}>
+			<pre role="img" aria-label={label} class="leading-none text-term-magenta">{art}</pre>
+			{
+				photo && (
+					<Image
+						src={portrait}
+						alt={`Dithered photograph of ${label}`}
+						format="png"
+						loading="eager"
+						class="shrink-0"
+						style={`height: ${LINES.length}em; width: auto`}
+					/>
+				)
+			}
+		</div>
 
 		{/*
 			A transcript that ends on a live prompt reads as a session still open —
