@@ -130,7 +130,13 @@ const LINKS = [
 ].map((link) => ({ ...link, ...mark(link.art) }));
 ---
 
-<ul class="flex shrink-0 flex-col" style={`gap: ${gap}em`}>
+{/*
+	Lifted above the window's click-to-focus shield, which otherwise spends the
+	first click raising the terminal and leaves the link needing a second one —
+	two clicks for something that looks like one. These are links, not window
+	contents that swallow the pointer, so they have nothing to wait for.
+*/}
+<ul class="relative z-10 flex shrink-0 flex-col" style={`gap: ${gap}em`}>
 	{
 		LINKS.map((link) => (
 			<li>
