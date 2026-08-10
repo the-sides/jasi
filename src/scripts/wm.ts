@@ -188,6 +188,12 @@ function initDesktop(desktop: HTMLElement) {
 		focus(win);
 		if (shielded) hold(win);
 
+		// A control in the chrome — a link in the groupbar — is not a handle to
+		// drag the window by. Bailing out before the capture and the
+		// preventDefault below leaves the press to the browser, which is what
+		// makes the click land on the control rather than on the window.
+		if (target.closest('[data-no-drag]')) return;
+
 		// A stacked window has nowhere to be dragged to, and a press on the
 		// shield is spent raising the window. Either way the gesture ends here —
 		// no capture and no preventDefault, so touch scrolling still works.

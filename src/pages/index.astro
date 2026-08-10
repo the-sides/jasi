@@ -80,7 +80,28 @@ import wallpaper from '../assets/wallpaper.png';
 				>
 					<Browser src="https://blog.jacobsides.com" title="Jacob Sides' blog" />
 				</Window>
-				<Window title="resume-jacob-sides.pdf" x={0.443} y={0.28} w={0.557} h={0.72}>
+				<Window x={0.443} y={0.28} w={0.557} h={0.72}>
+					{/*
+						The groupbar carries the one action this window has. The PDF is
+						shown with `toolbar=0`, so the viewer has no save button of its
+						own and the window's chrome is where the copy is taken from —
+						the same place a tiling WM keeps everything else about a window.
+						data-no-drag keeps the press away from the drag handler, so the
+						link is a link and the rest of the strip still drags.
+					*/}
+					<div slot="title" class="flex min-w-0 items-center gap-3">
+						<span class="truncate">resume-jacob-sides.pdf</span>
+						<a
+							href="/resume-jacob-sides.pdf"
+							download
+							data-no-drag
+							aria-label="Download Jacob Sides' resume"
+							class="shrink-0 cursor-pointer text-accent underline underline-offset-2 hover:no-underline"
+						>
+							download
+						</a>
+					</div>
+
 					<Pdf src="/resume-jacob-sides.pdf" title="Jacob Sides' resume" />
 				</Window>
 
