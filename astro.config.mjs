@@ -7,7 +7,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
 	// Absolute canonical and og:image URLs are built off this.
 	site: 'https://jacobsides.com',
-	integrations: [sitemap()],
+	integrations: [
+		// The gag redirect is noindex, so keep it out of the sitemap too.
+		sitemap({ filter: (page) => !page.includes('/invite-bro') }),
+	],
 	vite: {
 		plugins: [tailwindcss()],
 	},
