@@ -1,0 +1,28 @@
+---
+/*
+ * A gag route to hand out in an invite. The site builds static, so there is no
+ * server to send a 3xx — a meta refresh plus a matching client-side replace is
+ * the redirect. `location.replace` keeps it out of the back-button history, so
+ * going back lands wherever the victim came from instead of bouncing them here
+ * again.
+ */
+const destination = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="refresh" content={`0; url=${destination}`} />
+		<!-- Nothing here worth indexing, and the redirect would confuse crawlers. -->
+		<meta name="robots" content="noindex, nofollow" />
+		<title>Redirecting…</title>
+		<script is:inline define:vars={{ destination }}>
+			location.replace(destination);
+		</script>
+	</head>
+	<body>
+		<p>Redirecting… <a href={destination}>Continue</a></p>
+	</body>
+</html>
